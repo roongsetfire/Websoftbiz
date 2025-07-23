@@ -6,9 +6,6 @@
 {% block title %}รายการใบเสร็จ - Softbiz{% endblock %}
 
 {% block content %}
-
-  
-
     <style>
         /* Custom styles that can't be easily done with Tailwind */
         .gradient-blue {
@@ -79,7 +76,7 @@
                         </tr>
                     </thead>
                     <tbody id="dataTable">
-                        {% for record in queryset %}
+                        {% for record in cmt_artr %}
                         <tr onclick="selectRecord(this, '{{ record.id }}')" data-id="{{ record.id }}" 
                             class="cursor-pointer hover:bg-blue-100 even:bg-gray-50 border-b border-gray-200">
                             <td class="border border-gray-300 px-2 py-1 whitespace-nowrap">{{ record.month|default:"-" }}</td>
@@ -167,7 +164,7 @@
                             <div class="flex items-center gap-1">
                                 <label class="w-28 flex-shrink-0">ประจำเดือน</label>
                                 <input type="text" name="month" class="w-8 px-1 py-0.5 border border-gray-600 bg-gray-50 focus:outline-none focus:ring-1 focus:ring-blue-500" id="month">
-                                <label class= mx-1">ปี</label>
+                                <label class="mx-1">ปี</label>
                                 <input type="text" name="year" class="w-12 px-1 py-0.5 border border-gray-600 bg-gray-50 focus:outline-none focus:ring-1 focus:ring-blue-500" id="year">
                             </div>
                         </div>
@@ -230,51 +227,54 @@
                                 </tr>
                             </thead>
                             <tbody id="dataTable">
-                               
-                                <tr onclick="selectRecord()" 
-                                    class="cursor-pointer hover:bg-blue-100 even:bg-gray-50 border-b border-gray-200">
-                                    <td class="border border-gray-300 px-2 py-1 whitespace-nowrap"></td>
-                                    <td class="border border-gray-300 px-2 py-1 whitespace-nowrap"></td>
-                                    <td class="border border-gray-300 px-2 py-1 whitespace-nowrap"></td>
-                                    <td class="border border-gray-300 px-2 py-1 whitespace-nowrap"></td>
-                                    <td class="border border-gray-300 px-2 py-1 text-center whitespace-nowrap"></td>
-                                </tr>
-
-                                <tr>
-                                    <td colspan="7" class="border border-gray-300 text-center py-5 text-gray-600">
-                                        ไม่พบข้อมูลใบเสร็จ
-                                        {% if search_query %}
-                                            สำหรับคำค้นหา "{{ search_query }}"
-                                        {% endif %}
+                                <tr class="cursor-pointer even:bg-gray-50 border-b border-gray-200">
+                                    <td class="px-2 py-1 whitespace-nowrap">
+                                        <input type="text" name="item_code" id="item_code_table" value="" 
+                                               class="w-full px-1 py-0.5 border border-gray-300 focus:outline-none focus:ring-1 focus:ring-blue-500 item-code"
+                                               onkeypress="handleItemCode(event, this)">
+                                    </td>
+                                    <td class="px-2 py-1 whitespace-nowrap">
+                                        <input type="text" name="description" id="description_table" value="" 
+                                               class="w-full px-1 py-0.5 border border-gray-300 focus:outline-none focus:ring-1 focus:ring-blue-500 description">
+                                    </td>
+                                    <td class="px-2 py-1 whitespace-nowrap">
+                                        <input type="number" name="rate" id="rate_table" value="" 
+                                               class="w-full px-1 py-0.5 border border-gray-300 focus:outline-none focus:ring-1 focus:ring-blue-500 rate" 
+                                               step="0.01" onchange="calculateAmount(this)">
+                                    </td>
+                                    <td class="px-2 py-1 whitespace-nowrap">
+                                        <input type="number" name="quantity" id="quantity_table" value="" 
+                                               class="w-full px-1 py-0.5 border border-gray-300 focus:outline-none focus:ring-1 focus:ring-blue-500 quantity" 
+                                               step="0.01" onchange="calculateAmount(this)">
+                                    </td>
+                                    <td class="px-2 py-1 text-center whitespace-nowrap">
+                                        <input type="text" name="amount" id="amount_table" value="" 
+                                               class="w-full px-1 py-0.5 border border-gray-300 text-center bg-gray-50" readonly>
                                     </td>
                                 </tr>
-
                             </tbody>
                         </table>
                     </div>
                     <div class="p-2 flex-1 flex flex-col">
-
-                        
                         <div class="my-2 text-gray-600">
                             ? : / = ชำระแล้ว , x = ชำระบางส่วน
                         </div>
-
                         <div class="mt-2 text-right w-full">
                             <div class="block my-0.5">
                                 <label for="cb1">มูลค่าสินค้า/บริการN</label>
-                                <input type="text" name="value_n" id="cb1" class="ml-1 w-24 px-1 py-0.5 border border-gray-600 bg-gray-50 focus:outline-none focus:ring-1 focus:ring-blue-500">
+                                <input type="text" name="value_n" id="cb1" class="ml-1 w-24 px-1 py-0.5 border border-gray-600 bg-gray-50 focus:outline-none focus:ring-1 focus:ring-blue-500" readonly>
                             </div>
                             <div class="block my-0.5">
                                 <label for="cb2">มูลค่าสินค้า/บริการV</label>
-                                <input type="text" name="value_v" id="cb2" class="ml-1 w-24 px-1 py-0.5 border border-gray-600 bg-gray-50 focus:outline-none focus:ring-1 focus:ring-blue-500">
+                                <input type="text" name="value_v" id="cb2" class="ml-1 w-24 px-1 py-0.5 border border-gray-600 bg-gray-50 focus:outline-none focus:ring-1 focus:ring-blue-500" readonly>
                             </div>
                             <div class="block my-0.5">
                                 <label for="cb3">ภาษีมูลค่าเพิ่ม</label>
-                                <input type="text" name="vat" id="cb3" class="ml-1 w-24 px-1 py-0.5 border border-gray-600 bg-gray-50 focus:outline-none focus:ring-1 focus:ring-blue-500">
+                                <input type="text" name="vat" id="cb3" class="ml-1 w-24 px-1 py-0.5 border border-gray-600 bg-gray-50 focus:outline-none focus:ring-1 focus:ring-blue-500" readonly>
                             </div>
                             <div class="block my-0.5">
                                 <label for="cb4">รวมเงินทั้งสิ้น</label>
-                                <input type="text" name="total_amount" id="cb4" class="ml-1 w-24 px-1 py-0.5 border border-gray-600 bg-gray-50 focus:outline-none focus:ring-1 focus:ring-blue-500">
+                                <input type="text" name="total_amount" id="cb4" class="ml-1 w-24 px-1 py-0.5 border border-gray-600 bg-gray-50 focus:outline-none focus:ring-1 focus:ring-blue-500" readonly>
                             </div>
                             <div class="block my-0.5">
                                 <label for="cb5">ยอดชำระแล้ว</label>
@@ -282,7 +282,7 @@
                             </div>
                             <div class="block my-0.5">
                                 <label for="cb6">ยอดค้างชำระ ยกมา</label>
-                                <input type="text" name="outstanding_amount" id="cb6" class="ml-1 w-24 px-1 py-0.5 border border-gray-600 bg-gray-50 focus:outline-none focus:ring-1 focus:ring-blue-500">
+                                <input type="text" name="outstanding_amount" id="cb6" class="ml-1 w-24 px-1 py-0.5 border border-gray-600 bg-gray-50 focus:outline-none focus:ring-1 focus:ring-blue-500" readonly>
                             </div>
                         </div>
                     </div>
@@ -315,6 +315,69 @@
             </form>
         </div>
     </div>
+
+    <script>
+        // Load dictionary data from Django context
+        const dictionary_data = JSON.parse(`{{ item_data_json|safe|escapejs }}`);
+
+        // Handle item code input on Enter key
+        function handleItemCode(event, input) {
+            if (event.key === 'Enter') {
+                event.preventDefault();
+                const itemCode = input.value.trim();
+                const item = dictionary_data[itemCode];
+                const row = input.closest('tr');
+
+                if (item) {
+                    document.getElementById('description_table').value = item.description || '';
+                    // Leave rate and quantity empty for manual input
+                    document.getElementById('rate_table').value = '';
+                    document.getElementById('quantity_table').value = '';
+                    document.getElementById('amount_table').value = '';
+                    updateSummary();
+                } else {
+                    alert('ไม่พบรหัสสินค้า: ' + itemCode);
+                    document.getElementById('description_table').value = '';
+                    document.getElementById('rate_table').value = '';
+                    document.getElementById('quantity_table').value = '';
+                    document.getElementById('amount_table').value = '';
+                    updateSummary();
+                }
+            }
+        }
+
+        // Calculate amount when rate or quantity changes
+        function calculateAmount(input) {
+            const row = input.closest('tr');
+            const rate = parseFloat(document.getElementById('rate_table').value) || 0;
+            const quantity = parseFloat(document.getElementById('quantity_table').value) || 0;
+            document.getElementById('amount_table').value = (rate * quantity).toFixed(2);
+            updateSummary();
+        }
+
+        // Update summary fields
+        function updateSummary() {
+            const amount = parseFloat(document.getElementById('amount_table').value) || 0;
+            const itemCode = document.getElementById('item_code_table').value.trim();
+            const vatRate = 0.07; // 7% VAT
+
+            // Determine if item is subject to VAT (for simplicity, assume A101 is VAT-inclusive)
+            const isVatInclusive = itemCode === 'A101'; // Adjust logic as needed
+            const valueN = isVatInclusive ? 0 : amount; // Non-VAT amount
+            const valueV = isVatInclusive ? amount / (1 + vatRate) : 0; // VAT-inclusive base amount
+            const vat = isVatInclusive ? valueV * vatRate : 0; // VAT amount
+            const totalAmount = valueN + valueV + vat; // Total including VAT
+            const paidAmount = parseFloat(document.getElementById('cb5').value) || 0;
+            const outstandingAmount = totalAmount - paidAmount;
+
+            document.getElementById('cb1').value = valueN.toFixed(2); // มูลค่าสินค้า/บริการN
+            document.getElementById('cb2').value = valueV.toFixed(2); // มูลค่าสินค้า/บริการV
+            document.getElementById('cb3').value = vat.toFixed(2); // ภาษีมูลค่าเพิ่ม
+            document.getElementById('cb4').value = totalAmount.toFixed(2); // รวมเงินทั้งสิ้น
+            document.getElementById('cb5').value = paidAmount.toFixed(2); // ยอดชำระแล้ว (user input)
+            document.getElementById('cb6').value = outstandingAmount.toFixed(2); // ยอดค้างชำระ
+        }
+    </script>
 
     <script>
         // Global variables
@@ -618,8 +681,4 @@
             }
         });
     </script>
-    
-    <!-- Load Softbiz AJAX Script -->
-    <script src="{% load static %}{% static 'js/softbiz.js' %}"></script>
-
 {% endblock %}

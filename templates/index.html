@@ -475,7 +475,7 @@
                     </thead>
                     <tbody id="dataTable">
                         {% for record in page_obj %}
-                        <tr onclick="selectRecord(this, {{ record.id }})" data-id="{{ record.id }}">
+                        <tr onclick="selectRecord(this, '{{ record.id }}')" data-id="{{ record.id }}">
                             <td class="center">{{ record.month|default:"-" }}</td>
                             <td>{{ record.date|date:"d/m/Y" }}</td>
                             <td>{{ record.bill_no }}</td>

@@ -10,10 +10,9 @@
 from django.urls import path
 from . import views
 
-app_name = "m34"
 
 urlpatterns = [
-    path("", views.m34, name="m34"),
+    path("", views.m34, name="m34-page"),
     # path("get-record/<int:record_id>/", views.get_record, name="get_record"),
     # path("delete-record/<int:record_id>/", views.delete_record, name="delete_record"),
     # path("bills/create/", views.create_bill, name="create_bill"),

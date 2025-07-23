@@ -94,21 +94,15 @@
                         </tr>
                     </thead>
                     <tbody id="dataTable">
-                        {% for record in queryset %}
+                        {% for record in data %}
                         <tr onclick="selectRecord(this, '{{ record.id }}')" data-id="{{ record.id }}" 
                             class="cursor-pointer hover:bg-blue-100 even:bg-gray-50 border-b border-gray-200">
-                            <td class="border border-gray-300 px-2 py-1 whitespace-nowrap">{{ record.month|default:"-" }}</td>
                             <td class="border border-gray-300 px-2 py-1 whitespace-nowrap">{{ record.date|date:"d/m/Y" }}</td>
-                            <td class="border border-gray-300 px-2 py-1 whitespace-nowrap">{{ record.bill_no }}</td>
+                            <td class="border border-gray-300 px-2 py-1 whitespace-nowrap">{{ record.r_c_no}}</td>
                             <td class="border border-gray-300 px-2 py-1 whitespace-nowrap">{{ record.room_no_1 }}</td>
-                            <td class="border border-gray-300 px-2 py-1 whitespace-nowrap">
-                                {{ record.member_1 }}
-                                {% if record.member_2 %}
-                                    <br><small class="text-gray-600">{{ record.member_2 }}</small>
-                                {% endif %}
-                            </td>
-                            <td class="border border-gray-300 px-2 py-1 text-center whitespace-nowrap">{{ record.remark_1|default:"-" }}</td>
-                            <td class="border border-gray-300 px-2 py-1 whitespace-nowrap">{{ record.textstamp|default:""|truncatechars:15 }}</td>
+                            <td class="border border-gray-300 px-2 py-1 whitespace-nowrap">{{ record.member_2 }}</td>
+                            <td class="border border-gray-300 px-2 py-1 whitespace-nowrap"></td>
+                            <td class="border border-gray-300 px-2 py-1 text-center whitespace-nowrap">{{ record.remark_1|default:"-" }}</td>                 
                         </tr>
                         {% empty %}
                         <tr>
@@ -165,7 +159,7 @@
                         
                         <div class="flex items-center gap-1">
                             <label class="w-28 flex-shrink-0">เลขที่ใบเสร็จ</label>
-                            <input type="text" name="bill_no" class="w-24 px-1 py-0.5 border border-gray-600 bg-gray-50 focus:outline-none focus:ring-1 focus:ring-blue-500" id="bill_no">
+                            <input type="text" name="r_c_no" class="w-24 px-1 py-0.5 border border-gray-600 bg-gray-50 focus:outline-none focus:ring-1 focus:ring-blue-500" id="r_c_no">
                         </div>
                     
                         <div class="flex items-center gap-1">
@@ -209,14 +203,16 @@
                     <div class="flex-1">
                         <div class="flex items-center gap-1 mt-2">
                             <label class="w-28 flex-shrink-0 px-7">ประเภท</label>
-                            <input type="radio" id="option1" name="payment" value="ชำระตามบิล" class="accent-blue-600">
-                            <label for="option1">ชำระตามบิล</label>
+                            {% for value,label in type_choices %}
+                            <input type="radio" id="type_{{ forloop.counter }}" name="type" value="{{value}}" class="accent-blue-600">
+                            <label class="mr-3" for="type_{{ forloop.counter }}">{{label}}</label>
+                            {% endfor %}
 
-                            <input type="radio" id="option2" name="payment" value="จ่ายล่วงหน้า" class="accent-blue-600 ml-5">
+                            <!-- <input type="radio" id="option2" name="payment" value="จ่ายล่วงหน้า" class="accent-blue-600 ml-5">
                             <label for="option2">จ่ายล่วงหน้า</label>
 
                             <input type="radio" id="option3" name="payment" value="รายรับอื่นๆ" class="accent-blue-600 ml-5">
-                            <label for="option3">รายรับอื่นๆ</label>
+                            <label for="option3">รายรับอื่นๆ</label> -->
 
                             <button type="button" class="w-24 gradient-gray border border-gray-600 py-0.5 cursor-pointer hover:bg-gray-300 ml-10" data-modal-toggle="unpaidModal" data-modal-target="unpaidModal" onclick="getRadio1()">บิลค้างชำระ</button>
                             
@@ -246,7 +242,7 @@
                             <tbody id="dataTable">
                                
                                 {% for i in row_numbers %}
-                                <tr onclick="selectRecord()" 
+                                <tr onclick="" 
                                     class="cursor-pointer hover:bg-blue-100 even:bg-gray-50 border-b border-gray-200">
                                     <td class="border border-gray-300 py-1 text-center row-number"></td>
                                     <td class="border border-gray-300 px-2 py-1 whitespace-nowrap"></td>
@@ -276,10 +272,14 @@
 
                             <div class="flex items-center gap-2">
                                 <label class="w-16">ชำระโดย</label>
-                                <input type="radio" name="pay_type" value="cash"> เงินสด
+                                {% for value,label in payment_choices %}
+                                <input type="radio" id="payment_{{ forloop.counter }}" name="payment" value="{{value}}" class="accent-blue-600">
+                                <label class="mr-3" for="payment_{{ forloop.counter }}">{{label}}</label>
+                                {% endfor %}
+                                <!-- <input type="radio" name="pay_type" value="cash"> เงินสด
                                 <input type="radio" name="pay_type" value="cheque" class="ml-2"> เช็ค
                                 <input type="radio" name="pay_type" value="transfer" class="ml-2"> เงินโอน
-                                <input type="radio" name="pay_type" value="other" class="ml-2"> อื่นๆ
+                                <input type="radio" name="pay_type" value="other" class="ml-2"> อื่นๆ -->
                             </div>
 
                             <div class="flex items-center gap-2">
@@ -431,6 +431,10 @@
     </div>
 
     <script>
+    // Global variables
+    let currentRecordId = null;
+    let formMode = 'view';
+    let selectedRow = null;
 
     // Print report
     function printReport() {
@@ -439,11 +443,129 @@
 
     // บิลค้างชำระ
     function getRadio1() {
-        const selected = document.querySelector('input[name="payment"]:checked');
+        const selected = document.querySelector('input[name="type"]:checked');
         alert("คุณเลือก: " + (selected ? selected.value : "ยังไม่ได้เลือก"));
     }
 
+    // Select record in table
+    function selectRecord(row, recordId) {
+        // Remove previous selection
+        if (selectedRow) {
+            selectedRow.classList.remove('!bg-red-100');
+        }
+        
+        // Add selection to clicked row
+        row.classList.add('!bg-red-100');
+        selectedRow = row;
+        
+        // Load record details
+        loadRecordDetails(recordId);
+    }
 
+    // Load record details from table row
+    function loadRecordDetails(recordId) {
+        const row = document.querySelector(`tr[data-id="${recordId}"]`);
+        if (!row) return;
+
+        const cell_r_c_no = row.cells[1].textContent.trim();
+        const data_form = JSON.parse(`{{ data_json|safe|escapejs }}`);
+        let click_id = null;
+
+        console.log(cell_r_c_no)
+
+        for (let i = 0; i < data_form.length; i++) {
+            if (data_form[i].r_c_no.trim() === cell_r_c_no) {
+                click_id = data_form[i];
+                break;
+            }
+        }
+
+        // Fill form with record data from table
+        document.getElementById('r_c_no').value = click_id.r_c_no;
+        // document.getElementById('date').value = formatDateForInput(cells[1].textContent);
+        // document.getElementById('month').value = cells[0].textContent;
+        // document.getElementById('year').value = new Date().getFullYear(); // Default current year
+        // document.getElementById('prd').value = cells[3].textContent;
+        
+        // // Customer names
+        // const customerCell = cells[4];
+        // const customerText = customerCell.textContent.trim();
+        // const customerLines = customerText.split('\n');
+        // document.getElementById('member_1').value = customerLines[0] || '';
+        // document.getElementById('member_2').value = customerLines[1] || '';
+        
+        // document.getElementById('remark_1').value = cells[5].textContent === '-' ? '' : cells[5].textContent;
+        // document.getElementById('textstamp').value = cells[6].textContent;
+        
+        // currentRecordId = recordId;
+        // setFormMode('view');
+    }
+
+
+    // Delete record
+    function deleteRecord() {
+        if (!currentRecordId) {
+            showMessage('กรุณาเลือกข้อมูลที่ต้องการลบ', 'error');
+            return;
+        }
+
+        if (!confirm('คุณแน่ใจหรือไม่ที่จะลบข้อมูลนี้?')) {
+            return;
+        }
+
+        showLoading();
+        
+        // Simulate delete (replace with actual AJAX call)
+        setTimeout(() => {
+            hideLoading();
+            showMessage('ลบข้อมูลเรียบร้อยแล้ว', 'success');
+            
+            // Remove row from table
+            if (selectedRow) {
+                selectedRow.remove();
+                selectedRow = null;
+            }
+            
+            clearForm();
+            setFormMode('view');
+        }, 1000);
+    }
+
+    // Keyboard shortcuts
+    document.addEventListener('keydown', function(e) {
+        if (e.key === 'F2') {
+            e.preventDefault();
+            newRecord();
+        } else if (e.key === 'F3') {
+            e.preventDefault();
+            editRecord();
+        } else if (e.key === 'F4') {
+            e.preventDefault();
+            deleteRecord();
+        } else if (e.key === 'F5') {
+            e.preventDefault();
+            const searchInput = document.querySelector('input[name="search"]');
+            if (searchInput) searchInput.focus();
+        } else if (e.key === 'F6') {
+            e.preventDefault();
+            printReport();
+        } else if (e.key === 'F7') {
+            e.preventDefault();
+            if (confirm('ต้องการออกจากโปรแกรมหรือไม่?')) {
+                window.close();
+            }
+        } else if (e.ctrlKey && e.key === 's') {
+            e.preventDefault();
+            if (formMode === 'edit' || formMode === 'new') {
+                saveRecord();
+            }
+        } else if (e.key === 'Escape') {
+            e.preventDefault();
+            if (formMode === 'edit' || formMode === 'new') {
+                cancelEdit();
+            }
+        }
+    });
 
     </script>
 {% endblock %}

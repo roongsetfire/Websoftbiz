@@ -516,11 +516,13 @@ from django.shortcuts import render
 from expense.models import CmtArtr, CmtArtrItem
 from expense.forms import CmtArtrForm
 from django.contrib import messages
-
+import json
 
 def m34(request):
     """หน้าแสดงรายการข้อมูลใบเสร็จ"""
-    queryset = CmtArtr.objects.all()
+    cmt_artr = CmtArtr.objects.all()
+    cmt_artr_item = CmtArtrItem.objects.all()
+
     if request.method == "POST":
         form = CmtArtrForm(request.POST)
         if form.is_valid():
@@ -531,7 +533,23 @@ def m34(request):
     else:
         form = CmtArtrForm()
 
-    context = {"form": form, "queryset": queryset, "f_12": "F2 เพิ่ม"}
+    # Build dictionary for JavaScript auto-fill
+    item_dict = {
+        item.item_code: {
+            "description": item.description,
+            "rate": float(item.rate),
+            "quantity": float(item.quantity),
+            "amount": float(item.amount),
+        }
+        for item in cmt_artr_item
+        if item.item_code
+    }
+
+    context = {
+        "form": form,
+        "cmt_artr": cmt_artr,
+        "cmt_artr_item": cmt_artr_item,
+        "item_data_json": json.dumps(item_dict),  # pass to template
+        "f_12": "F2 เพิ่ม",
+    }
     return render(request, "m34/index.html", context)
-
-
