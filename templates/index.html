@@ -1,0 +1,1017 @@
+<!-- templates/index.html -->
+{% extends 'base.html' %}
+
+{% load static %}
+
+
+{% block title %}รายการใบเสร็จ - Softbiz{% endblock %}
+
+{% block content %}
+
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Tahoma', 'Arial', sans-serif;
+            font-size: 11px;
+            background-color: #f0f0f0;
+            overflow: hidden;
+        }
+
+        /* Title Bar */
+        .title-bar {
+            background: linear-gradient(to bottom, #4a90e2, #357abd);
+            color: white;
+            padding: 8px 15px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            position: relative;
+            font-weight: bold;
+            font-size: 14px;
+        }
+
+        .window-controls {
+            position: absolute;
+            right: 10px;
+            display: flex;
+            gap: 5px;
+        }
+
+        .control-btn {
+            width: 18px;
+            height: 18px;
+            background: #ddd;
+            border: 1px solid #999;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 10px;
+        }
+
+        /* Menu Bar */
+        .menu-bar {
+            background: #e8e8e8;
+            border-bottom: 1px solid #ccc;
+            padding: 3px 0;
+            display: flex;
+            gap: 15px;
+            padding-left: 10px;
+            font-size: 11px;
+        }
+
+        .menu-item {
+            padding: 3px 8px;
+            cursor: pointer;
+            border-radius: 2px;
+        }
+
+        .menu-item:hover {
+            background: #d0d0d0;
+        }
+
+        /* Main Container */
+        .main-container {
+            display: flex;
+            height: calc(100vh - 80px);
+        }
+
+        /* Left Panel - Data Table */
+        .left-panel {
+            flex: 1;
+            background: white;
+            border-right: 2px solid #ccc;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* Table Container */
+        .table-container {
+            flex: 1;
+            overflow: auto;
+            border: 1px solid #ccc;
+            margin: 5px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 11px;
+        }
+
+        th {
+            background: #e0e0e0;
+            border: 1px solid #999;
+            padding: 4px 6px;
+            text-align: left;
+            font-weight: bold;
+            position: sticky;
+            top: 0;
+            z-index: 10;
+        }
+
+        td {
+            border: 1px solid #ddd;
+            padding: 3px 6px;
+            white-space: nowrap;
+        }
+
+        tr:nth-child(even) {
+            background: #f9f9f9;
+        }
+
+        tr:hover {
+            background: #e6f3ff;
+        }
+
+        tr.selected {
+            background: #ffe6e6 !important;
+        }
+
+        /* Navigation Buttons */
+        .nav-buttons {
+            background: #f0f0f0;
+            border-top: 1px solid #ccc;
+            padding: 5px;
+            display: flex;
+            gap: 3px;
+            align-items: center;
+        }
+
+        .nav-btn {
+            width: 25px;
+            height: 20px;
+            background: #e8e8e8;
+            border: 1px solid #999;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 10px;
+            text-decoration: none;
+            color: #000;
+        }
+
+        .nav-btn:hover {
+            background: #d0d0d0;
+        }
+
+        .nav-btn:active {
+            background: #b0b0b0;
+        }
+
+        .nav-btn.disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .page-info {
+            margin-left: 10px;
+            font-size: 10px;
+            color: #666;
+        }
+
+        /* Right Panel */
+        .right-panel {
+            width: 350px;
+            background: #f8f8f8;
+            display: flex;
+            flex-direction: column;
+            border-left: 1px solid #ccc;
+        }
+
+        /* Form Section */
+        .form-section {
+            background: white;
+            margin: 5px;
+            border: 1px solid #ccc;
+            padding: 10px;
+        }
+
+        .form-title {
+            background: linear-gradient(to bottom, #4a90e2, #357abd);
+            color: white;
+            padding: 4px 8px;
+            margin: -10px -10px 8px -10px;
+            font-weight: bold;
+            text-align: center;
+        }
+
+        .form-row {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 6px;
+            align-items: center;
+        }
+
+        .form-label {
+            min-width: 80px;
+            font-size: 11px;
+        }
+
+        .form-input {
+            flex: 1;
+            padding: 2px 4px;
+            border: 1px solid #999;
+            font-size: 11px;
+        }
+
+        .form-input:focus {
+            outline: 1px solid #4a90e2;
+        }
+
+        .report-btn, .form-btn {
+            background: #e0e0e0;
+            border: 1px solid #999;
+            padding: 4px 12px;
+            cursor: pointer;
+            font-size: 11px;
+            margin-left: 8px;
+        }
+
+        .report-btn:hover, .form-btn:hover {
+            background: #d0d0d0;
+        }
+
+        /* Task List */
+        .task-list {
+            background: white;
+            margin: 5px;
+            border: 1px solid #ccc;
+            flex: 1;
+        }
+
+        .task-header {
+            background: #e0e0e0;
+            padding: 4px 8px;
+            border-bottom: 1px solid #ccc;
+            font-weight: bold;
+            display: flex;
+            justify-content: space-between;
+        }
+
+        .task-content {
+            padding: 8px;
+            font-size: 10px;
+        }
+
+        .task-grid {
+            display: grid;
+            grid-template-columns: 20px 1fr;
+            gap: 2px;
+            margin: 8px 0;
+        }
+
+        .task-number {
+            text-align: center;
+            font-weight: bold;
+        }
+
+        .checkbox-section {
+            margin-top: 8px;
+            font-size: 10px;
+        }
+
+        .checkbox-row {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            margin: 2px 0;
+        }
+
+        .status-indicators {
+            display: flex;
+            gap: 8px;
+            margin: 8px 0;
+            font-size: 10px;
+        }
+
+        .status-box {
+            width: 60px;
+            height: 15px;
+            border: 1px solid #999;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .status-red {
+            background: #ff6b6b;
+        }
+
+        /* Notes Section */
+        .notes-section {
+            background: white;
+            margin: 5px;
+            border: 1px solid #ccc;
+            height: 120px;
+        }
+
+        .notes-header {
+            background: #e0e0e0;
+            padding: 4px 8px;
+            border-bottom: 1px solid #ccc;
+            font-weight: bold;
+        }
+
+        .notes-textarea {
+            width: 100%;
+            height: calc(100% - 25px);
+            border: none;
+            padding: 5px;
+            font-size: 11px;
+            resize: none;
+            outline: none;
+        }
+
+        /* Special styling for data */
+        .month-col { width: 60px; }
+        .date-col { width: 80px; }
+        .receipt-col { width: 70px; }
+        .room-col { width: 50px; }
+        .customer-col { width: 120px; }
+        .payment-col { width: 80px; }
+        .note-col { width: 100px; }
+
+        .center {
+            text-align: center;
+        }
+
+        /* Search Section */
+        .search-section {
+            background: white;
+            border: 1px solid #ccc;
+            margin: 5px;
+            padding: 8px;
+        }
+
+        .search-row {
+            display: flex;
+            gap: 5px;
+            margin-bottom: 5px;
+            align-items: center;
+        }
+
+        .search-input {
+            flex: 1;
+            padding: 2px 4px;
+            border: 1px solid #999;
+            font-size: 11px;
+        }
+
+        .search-btn {
+            background: #4a90e2;
+            color: white;
+            border: 1px solid #357abd;
+            padding: 2px 8px;
+            cursor: pointer;
+            font-size: 10px;
+        }
+
+        .search-btn:hover {
+            background: #357abd;
+        }
+
+        /* Loading indicator */
+        .loading {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: rgba(0,0,0,0.8);
+            color: white;
+            padding: 20px;
+            border-radius: 5px;
+            z-index: 2000;
+            display: none;
+        }
+
+        /* Form actions */
+        .form-actions {
+            display: flex;
+            gap: 5px;
+            margin-top: 8px;
+        }
+
+        .btn-new { background: #28a745; color: white; }
+        .btn-edit { background: #ffc107; color: black; }
+        .btn-save { background: #007bff; color: white; }
+        .btn-cancel { background: #6c757d; color: white; }
+        .btn-delete { background: #dc3545; color: white; }
+
+        /* Messages */
+        .messages {
+            position: fixed;
+            top: 50px;
+            right: 20px;
+            z-index: 1000;
+            max-width: 300px;
+        }
+
+        .message {
+            padding: 10px 15px;
+            margin-bottom: 10px;
+            border-radius: 4px;
+            font-size: 12px;
+            animation: slideIn 0.3s ease-out;
+        }
+
+        .message.success {
+            background: #d4edda;
+            border: 1px solid #c3e6cb;
+            color: #155724;
+        }
+
+        .message.error {
+            background: #f8d7da;
+            border: 1px solid #f5c6cb;
+            color: #721c24;
+        }
+
+        @keyframes slideIn {
+            from { transform: translateX(100%); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
+        }
+    </style>
+
+
+    <!-- Loading Indicator -->
+    <div id="loading" class="loading">กำลังประมวลผล...</div>
+
+    <!-- Messages -->
+    <div id="messages" class="messages"></div>
+
+    <!-- CSRF Token -->
+    {% csrf_token %}
+
+    <!-- Title Bar -->
+    <div class="title-bar">
+        <span>ใบแจ้งค่าใช้จ่าย {{ total_records }} รายการ</span>
+    </div>
+
+    
+
+    <div class="main-container">
+        <!-- Left Panel - Data Table -->
+        <div class="left-panel">
+
+            <div class="table-container">
+                <table>
+                    <thead>
+                        <tr>
+                            <th class="month-col">เดือน-งวด</th>
+                            <th class="date-col">วันที่</th>
+                            <th class="receipt-col">ใบแจ้งหนี้</th>
+                            <th class="room-col">ห้อง</th>
+                            <th class="customer-col">ลูกค้า</th>
+                            <th class="payment-col">จำนวนเงิน</th>
+                            <th class="note-col">หมายเหตุ</th>
+                        </tr>
+                    </thead>
+                    <tbody id="dataTable">
+                        {% for record in page_obj %}
+                        <tr onclick="selectRecord(this, {{ record.id }})" data-id="{{ record.id }}">
+                            <td class="center">{{ record.month|default:"-" }}</td>
+                            <td>{{ record.date|date:"d/m/Y" }}</td>
+                            <td>{{ record.bill_no }}</td>
+                            <td>{{ record.prd }}</td>
+                            <td>
+                                {{ record.member_1 }}
+                                {% if record.member_2 %}
+                                    <br><small style="color: #666;">{{ record.member_2 }}</small>
+                                {% endif %}
+                            </td>
+                            <td class="center">{{ record.remark_1|default:"-" }}</td>
+                            <td>{{ record.textstamp|default:""|truncatechars:15 }}</td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="7" class="center" style="padding: 20px; color: #666;">
+                                ไม่พบข้อมูลใบเสร็จ
+                                {% if search_query %}
+                                    สำหรับคำค้นหา "{{ search_query }}"
+                                {% endif %}
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Navigation Buttons -->
+            <div class="nav-buttons">
+                {% if page_obj.has_previous %}
+                    <a href="?page=1{% if search_query %}&search={{ search_query }}{% endif %}{% if date_from %}&date_from={{ date_from }}{% endif %}{% if date_to %}&date_to={{ date_to }}{% endif %}" class="nav-btn">|&lt;</a>
+                    <a href="?page={{ page_obj.previous_page_number }}{% if search_query %}&search={{ search_query }}{% endif %}{% if date_from %}&date_from={{ date_from }}{% endif %}{% if date_to %}&date_to={{ date_to }}{% endif %}" class="nav-btn">&lt;</a>
+                {% else %}
+                    <span class="nav-btn disabled">|&lt;</span>
+                    <span class="nav-btn disabled">&lt;</span>
+                {% endif %}
+                
+                {% if page_obj.has_next %}
+                    <a href="?page={{ page_obj.next_page_number }}{% if search_query %}&search={{ search_query }}{% endif %}{% if date_from %}&date_from={{ date_from }}{% endif %}{% if date_to %}&date_to={{ date_to }}{% endif %}" class="nav-btn">&gt;</a>
+                    <a href="?page={{ page_obj.paginator.num_pages }}{% if search_query %}&search={{ search_query }}{% endif %}{% if date_from %}&date_from={{ date_from }}{% endif %}{% if date_to %}&date_to={{ date_to }}{% endif %}" class="nav-btn">&gt;|</a>
+                {% else %}
+                    <span class="nav-btn disabled">&gt;</span>
+                    <span class="nav-btn disabled">&gt;|</span>
+                {% endif %}
+                
+                <div class="page-info">
+                    หน้า {{ page_obj.number }} / {{ page_obj.paginator.num_pages }} 
+                    ({{ page_obj.start_index }}-{{ page_obj.end_index }} จาก {{ page_obj.paginator.count }}) |
+                    F2 เพิ่ม | F3 แก้ไข | F4 ลบ | F5 ค้นหา | F6 พิมพ์ | F7 ออก
+                </div>
+            </div>
+        </div>
+
+        <!-- Right Panel -->
+        <div class="right-panel">
+            <!-- Form Section -->
+            <div class="form-section" id="formSection">
+                
+                <div class="form-row">
+                    <label class="form-label">เลขที่ใบแจ้งหนี้</label>
+                    <input type="text" class="form-input" id="bill_no" readonly>
+                </div>
+                
+                <div class="form-row">
+                    <label class="form-label">วันที่</label>
+                    <input type="date" class="form-input" id="date" readonly>
+                    <button class="report-btn" onclick="printReport()">REPORT</button>
+                </div>
+                
+                <div class="form-row">
+                    <label class="form-label">ประจำเดือน</label>
+                    <input type="text" class="form-input" id="month" style="width: 30px;" readonly>
+                    <label style="margin-left: 8px;">ปี</label>
+                    <input type="text" class="form-input" id="year" style="width: 60px;" readonly>
+                </div>
+                
+                <div class="form-row">
+                    <label class="form-label">งวด</label>
+                    <input type="text" class="form-input" id="prd" readonly>
+                </div>
+                
+                <div class="form-row">
+                    <label class="form-label">เลขห้องที่</label>
+                    <input type="text" class="form-input" id="room_no_1" readonly>
+                </div>
+                
+                <div class="form-row">
+                    <label class="form-label"></label>
+                    <input type="text" class="form-input" id="room_no_2" readonly>
+                </div>
+                
+                <div class="form-row">
+                    <label class="form-label">รหัส-ชื่อ</label>
+                    <input type="text" class="form-input" id="member_1" readonly>
+                </div>
+                
+                <div class="form-row">
+                    <label class="form-label"></label>
+                    <input type="text" class="form-input" id="member_2" readonly>
+                </div>
+                
+                <div class="form-row">
+                    <label class="form-label">ชำระภายในวันที่</label>
+                    <input type="date" class="form-input" id="duedate" readonly>
+                </div>
+                
+                <div class="form-row">
+                    <label class="form-label">หมายเหตุ</label>
+                    <input type="text" class="form-input" id="remark_1" readonly>
+                </div>
+                
+                <div class="form-row">
+                    <label class="form-label"></label>
+                    <input type="text" class="form-input" id="textstamp" readonly>
+                </div>
+            
+                
+                <input type="hidden" id="currentRecordId" value="">
+                <input type="hidden" id="formMode" value="view">
+            </div>
+
+            <!-- Task List -->
+            <div class="task-list">
+                <div class="task-header">
+                    <span>รหัส</span>
+                    <span>รายงาน</span>
+                    <span>อัตรา-F12</span>
+                    <span>จำนวน</span>
+                    <span>เป็นเงิน</span>
+                </div>
+                <div class="task-content">
+                    <div class="task-grid">
+                        <div class="task-number">1.</div><div></div>
+                        <div class="task-number">2.</div><div></div>
+                        <div class="task-number">3.</div><div></div>
+                        <div class="task-number">4.</div><div></div>
+                        <div class="task-number">5.</div><div></div>
+                        <div class="task-number">6.</div><div></div>
+                        <div class="task-number">7.</div><div></div>
+                        <div class="task-number">8.</div><div></div>
+                        <div class="task-number">9.</div><div></div>
+                        <div class="task-number">10.</div><div></div>
+                        <div class="task-number">11.</div><div></div>
+                        <div class="task-number">12.</div><div></div>
+                        <div class="task-number">13.</div><div></div>
+                        <div class="task-number">14.</div><div></div>
+                        <div class="task-number">15.</div><div></div>
+                    </div>
+                    
+                    <div style="margin: 8px 0; font-size: 10px;">
+                        ? : / = ชำระแล้ว , x = ชำระบางส่วน
+                    </div>
+
+                    <div class="checkbox-section">
+                        <div class="checkbox-row">
+                            <input type="checkbox" id="cb1">
+                            <label for="cb1">มูลค่าสินค้า/บริการN</label>
+                        </div>
+                        <div class="checkbox-row">
+                            <input type="checkbox" id="cb2">
+                            <label for="cb2">มูลค่าสินค้า/บริการV</label>
+                        </div>
+                        <div class="checkbox-row">
+                            <input type="checkbox" id="cb3">
+                            <label for="cb3">ภาษีมูลค่าเพิ่ม</label>
+                        </div>
+                        <div class="checkbox-row">
+                            <input type="checkbox" id="cb4">
+                            <label for="cb4">รวมเงินทั้งสิ้น</label>
+                        </div>
+                        <div class="checkbox-row">
+                            <input type="checkbox" id="cb5">
+                            <label for="cb5">ยอดชำระแล้ว</label>
+                        </div>
+                     
+                    </div>
+
+                    <div class="status-indicators">
+                        <div class="status-box status-red"></div>
+                        <div style="font-size: 10px; margin-top: 2px;">
+                            ยอดค้างชำระ ยกมา
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Notes Section -->
+            <div class="notes-section">
+                <div class="notes-header">หมายเหตุ</div>
+                <textarea class="notes-textarea" id="generalNotes" placeholder="กรอกหมายเหตุเพิ่มเติม..."></textarea>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Global variables
+        let currentRecordId = null;
+        let formMode = 'view';
+        let selectedRow = null;
+
+        // Select record in table
+        function selectRecord(row, recordId) {
+            // Remove previous selection
+            if (selectedRow) {
+                selectedRow.classList.remove('selected');
+            }
+            
+            // Add selection to clicked row
+            row.classList.add('selected');
+            selectedRow = row;
+            
+            // Load record details
+            loadRecordDetails(recordId);
+        }
+
+        // Load record details from table row
+        function loadRecordDetails(recordId) {
+            const row = document.querySelector(`tr[data-id="${recordId}"]`);
+            if (!row) return;
+
+            const cells = row.cells;
+            
+            // Fill form with record data from table
+            document.getElementById('bill_no').value = cells[2].textContent;
+            document.getElementById('date').value = formatDateForInput(cells[1].textContent);
+            document.getElementById('month').value = cells[0].textContent;
+            document.getElementById('year').value = new Date().getFullYear(); // Default current year
+            document.getElementById('prd').value = cells[3].textContent;
+            
+            // Customer names
+            const customerCell = cells[4];
+            const customerText = customerCell.textContent.trim();
+            const customerLines = customerText.split('\n');
+            document.getElementById('member_1').value = customerLines[0] || '';
+            document.getElementById('member_2').value = customerLines[1] || '';
+            
+            document.getElementById('remark_1').value = cells[5].textContent === '-' ? '' : cells[5].textContent;
+            document.getElementById('textstamp').value = cells[6].textContent;
+            
+            currentRecordId = recordId;
+            setFormMode('view');
+        }
+
+        // Format date for input field (DD/MM/YYYY to YYYY-MM-DD)
+        function formatDateForInput(dateStr) {
+            if (!dateStr || dateStr === '-') return '';
+            
+            const parts = dateStr.split('/');
+            if (parts.length === 3) {
+                const day = parts[0].padStart(2, '0');
+                const month = parts[1].padStart(2, '0');
+                const year = parts[2];
+                return `${year}-${month}-${day}`;
+            }
+            return '';
+        }
+
+        // Set form mode
+        function setFormMode(mode) {
+            formMode = mode;
+            const editBtn = document.getElementById('editBtn');
+            const saveBtn = document.getElementById('saveBtn');
+            const cancelBtn = document.getElementById('cancelBtn');
+            const deleteBtn = document.getElementById('deleteBtn');
+            const inputs = document.querySelectorAll('.form-input');
+            
+            if (mode === 'view') {
+                editBtn.disabled = currentRecordId === null;
+                deleteBtn.disabled = currentRecordId === null;
+                saveBtn.style.display = 'none';
+                cancelBtn.style.display = 'none';
+                
+                inputs.forEach(input => {
+                    input.readOnly = true;
+                    input.style.background = '#f9f9f9';
+                });
+                
+            } else if (mode === 'edit' || mode === 'new') {
+                editBtn.disabled = true;
+                deleteBtn.disabled = true;
+                saveBtn.style.display = 'inline-block';
+                cancelBtn.style.display = 'inline-block';
+                
+                inputs.forEach(input => {
+                    input.readOnly = false;
+                    input.style.background = '#fff';
+                });
+            }
+        }
+
+        // New record
+        function newRecord() {
+            // Clear form
+            document.querySelectorAll('.form-input').forEach(input => {
+                input.value = '';
+            });
+            
+            // Set current date
+            const today = new Date();
+            document.getElementById('date').value = today.toISOString().split('T')[0];
+            document.getElementById('month').value = String(today.getMonth() + 1).padStart(2, '0');
+            document.getElementById('year').value = today.getFullYear();
+            
+            currentRecordId = null;
+            setFormMode('new');
+            
+            // Clear table selection
+            if (selectedRow) {
+                selectedRow.classList.remove('selected');
+                selectedRow = null;
+            }
+        }
+
+        // Edit record
+        function editRecord() {
+            if (currentRecordId) {
+                setFormMode('edit');
+            } else {
+                showMessage('กรุณาเลือกข้อมูลที่ต้องการแก้ไข', 'error');
+            }
+        }
+
+        // Cancel edit
+        function cancelEdit() {
+            if (currentRecordId) {
+                loadRecordDetails(currentRecordId);
+            } else {
+                clearForm();
+                setFormMode('view');
+            }
+        }
+
+        // Clear form
+        function clearForm() {
+            document.querySelectorAll('.form-input').forEach(input => {
+                input.value = '';
+            });
+            currentRecordId = null;
+        }
+
+        // Save record
+        function saveRecord() {
+            const formData = new FormData();
+            
+            // Collect form data
+            formData.append('bill_no', document.getElementById('bill_no').value);
+            formData.append('date', document.getElementById('date').value);
+            formData.append('month', document.getElementById('month').value);
+            formData.append('year', document.getElementById('year').value);
+            formData.append('prd', document.getElementById('prd').value);
+            formData.append('room_no_1', document.getElementById('room_no_1').value);
+            formData.append('room_no_2', document.getElementById('room_no_2').value);
+            formData.append('member_1', document.getElementById('member_1').value);
+            formData.append('member_2', document.getElementById('member_2').value);
+            formData.append('duedate', document.getElementById('duedate').value);
+            formData.append('remark_1', document.getElementById('remark_1').value);
+            formData.append('textstamp', document.getElementById('textstamp').value);
+
+            // Validate required fields
+            if (!formData.get('bill_no') || !formData.get('date') || !formData.get('member_1')) {
+                showMessage('กรุณากรอกข้อมูลที่จำเป็นให้ครบถ้วน', 'error');
+                return;
+            }
+
+            showLoading();
+            
+            // Simulate save (replace with actual AJAX call)
+            setTimeout(() => {
+                hideLoading();
+                showMessage(currentRecordId ? 'แก้ไขข้อมูลเรียบร้อยแล้ว' : 'บันทึกข้อมูลเรียบร้อยแล้ว', 'success');
+                
+                if (!currentRecordId) {
+                    // Refresh page for new record
+                    setTimeout(() => {
+                        window.location.reload();
+                    }, 1000);
+                } else {
+                    setFormMode('view');
+                }
+            }, 1000);
+        }
+
+        // Delete record
+        function deleteRecord() {
+            if (!currentRecordId) {
+                showMessage('กรุณาเลือกข้อมูลที่ต้องการลบ', 'error');
+                return;
+            }
+
+            if (!confirm('คุณแน่ใจหรือไม่ที่จะลบข้อมูลนี้?')) {
+                return;
+            }
+
+            showLoading();
+            
+            // Simulate delete (replace with actual AJAX call)
+            setTimeout(() => {
+                hideLoading();
+                showMessage('ลบข้อมูลเรียบร้อยแล้ว', 'success');
+                
+                // Remove row from table
+                if (selectedRow) {
+                    selectedRow.remove();
+                    selectedRow = null;
+                }
+                
+                clearForm();
+                setFormMode('view');
+            }, 1000);
+        }
+
+        // Clear search
+        function clearSearch() {
+            document.querySelector('input[name="search"]').value = '';
+            document.querySelector('input[name="date_from"]').value = '';
+            document.querySelector('input[name="date_to"]').value = '';
+            document.getElementById('searchForm').submit();
+        }
+
+        // Export data
+        function exportData() {
+            showMessage('กำลังส่งออกข้อมูล...', 'success');
+        }
+
+        // Print report
+        function printReport() {
+            window.print();
+        }
+
+        // Refresh data
+        function refreshData() {
+            window.location.reload();
+        }
+
+        // Show loading
+        function showLoading() {
+            document.getElementById('loading').style.display = 'block';
+        }
+
+        // Hide loading
+        function hideLoading() {
+            document.getElementById('loading').style.display = 'none';
+        }
+
+        // Show message
+        function showMessage(message, type = 'success') {
+            const messageDiv = document.createElement('div');
+            messageDiv.className = `message ${type}`;
+            messageDiv.textContent = message;
+            
+            const container = document.getElementById('messages');
+            container.appendChild(messageDiv);
+            
+            // Auto remove after 3 seconds
+            setTimeout(() => {
+                if (messageDiv.parentNode) {
+                    messageDiv.parentNode.removeChild(messageDiv);
+                }
+            }, 3000);
+        }
+
+        // Keyboard shortcuts
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'F2') {
+                e.preventDefault();
+                newRecord();
+            } else if (e.key === 'F3') {
+                e.preventDefault();
+                editRecord();
+            } else if (e.key === 'F4') {
+                e.preventDefault();
+                deleteRecord();
+            } else if (e.key === 'F5') {
+                e.preventDefault();
+                document.querySelector('input[name="search"]').focus();
+            } else if (e.key === 'F6') {
+                e.preventDefault();
+                printReport();
+            } else if (e.key === 'F7') {
+                e.preventDefault();
+                if (confirm('ต้องการออกจากโปรแกรมหรือไม่?')) {
+                    window.close();
+                }
+            } else if (e.ctrlKey && e.key === 's') {
+                e.preventDefault();
+                if (formMode === 'edit' || formMode === 'new') {
+                    saveRecord();
+                }
+            } else if (e.key === 'Escape') {
+                e.preventDefault();
+                if (formMode === 'edit' || formMode === 'new') {
+                    cancelEdit();
+                }
+            }
+        });
+
+        // Auto-fill month and year when date changes
+        document.getElementById('date').addEventListener('change', function() {
+            const date = new Date(this.value);
+            if (!isNaN(date.getTime())) {
+                document.getElementById('month').value = String(date.getMonth() + 1).padStart(2, '0');
+                document.getElementById('year').value = date.getFullYear();
+                
+                // Auto set due date to next month
+                const dueDate = new Date(date);
+                dueDate.setMonth(dueDate.getMonth() + 1);
+                document.getElementById('duedate').value = dueDate.toISOString().split('T')[0];
+            }
+        });
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', function() {
+            setFormMode('view');
+            
+            // Select first row if exists
+            const firstRow = document.querySelector('#dataTable tr[data-id]');
+            if (firstRow) {
+                const recordId = firstRow.getAttribute('data-id');
+                selectRecord(firstRow, recordId);
+            }
+            
+            // Auto-submit search form when date changes
+            const dateInputs = document.querySelectorAll('input[type="date"]');
+            dateInputs.forEach(input => {
+                input.addEventListener('change', function() {
+                    if (input.name === 'date_from' || input.name === 'date_to') {
+                        setTimeout(() => {
+                            document.getElementById('searchForm').submit();
+                        }, 500);
+                    }
+                });
+            });
+        });
+    </script>
+    
+    <!-- Load Softbiz AJAX Script -->
+    <script src="{% load static %}{% static 'js/softbiz.js' %}"></script>
+
+{% endblock %}

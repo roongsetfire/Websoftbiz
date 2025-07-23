@@ -1,0 +1,668 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Softbiz - จัดการใบเสร็จ{% endblock %}</title>
+    
+    <!-- TailwindCSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Font Awesome -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+
+    <link rel="stylesheet" href="{% static 'css/tailwind-utilities.css' %}">
+    <script src="{% static 'js/tailwind-utilities.js' %}"></script>
+    
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        'softbiz-blue': '#0066cc',
+                        'softbiz-blue-dark': '#0052a3',
+                    },
+                    fontFamily: {
+                        'thai': ['Sarabun', 'Arial', 'sans-serif'],
+                    }
+                }
+            }
+        }
+    </script>
+    
+    <style>
+        /* Custom styles that can't be easily done with Tailwind */
+        .gradient-blue {
+            background: linear-gradient(to bottom, #0066cc, #0052a3);
+        }
+        
+        .gradient-gray {
+            background: linear-gradient(to bottom, #f8f8f8, #e8e8e8);
+        }
+        
+        .gradient-light-gray {
+            background: linear-gradient(to bottom, #f0f0f0, #e0e0e0);
+        }
+
+        /* Custom animations */
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(-10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        @keyframes slideIn {
+            from { transform: translateX(100%); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
+        }
+        
+        .fade-in {
+            animation: fadeIn 0.3s ease-out;
+        }
+        
+        .animate-slide-in {
+            animation: slideIn 0.3s ease-out;
+        }
+        
+        /* Alert close button animation */
+        .alert-dismissible .btn-close:hover {
+            transform: scale(1.1);
+            transition: transform 0.2s ease;
+        }
+
+        /* Menu hover effects */
+        .menu-item:hover {
+            transform: translateY(-1px);
+            transition: all 0.2s ease;
+        }
+
+        /* Dropdown styles */
+        .dropdown {
+            position: relative;
+        }
+        .dropdown-menu {
+            display: none;
+            position: absolute;
+            top: 100%;
+            left: 0;
+            background-color: #fff;
+            border: 1px solid #e5e7eb;
+            border-radius: 0.25rem;
+            min-width: 180px;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+            z-index: 50;
+        }
+        .dropdown:hover .dropdown-menu {
+            display: block;
+        }
+        .dropdown-item {
+            display: block;
+            padding: 0.5rem 1rem;
+            color: #374151;
+            text-decoration: none;
+            font-size: 0.875rem; /* Increased from 1rem (16px) to match text-sm */
+        }
+        .dropdown-item:hover {
+            background-color: #f9fafb;
+            color: #1f2937;
+        }
+        .dropdown-item.exit {
+            color: #dc2626;
+        }
+        .dropdown-item.exit:hover {
+            background-color: #fee2e2;
+            color: #991b1b;
+        }
+        .sub-dropdown {
+            position: relative;
+        }
+        .sub-dropdown-menu {
+            display: none;
+            position: absolute;
+            top: 0;
+            left: 100%;
+            background-color: #fff;
+            border: 1px solid #e5e7eb;
+            border-radius: 0.25rem;
+            min-width: 250px;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+            z-index: 60;
+        }
+        .sub-dropdown:hover .sub-dropdown-menu {
+            display: block;
+        }
+    </style>
+    {% block extra_css %}
+    <!-- Flowbite CSS -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/flowbite/2.2.1/flowbite.min.css" rel="stylesheet" />
+    {% endblock %}
+    
+</head>
+<body class="bg-gray-50 font-thai min-h-screen flex flex-col text-sm"> <!-- Changed text-xs to text-sm -->
+
+    <!-- Menu Bar -->
+    <div class="gradient-light-gray border-b border-gray-300 px-2 py-1 flex gap-4 shadow-sm">
+        <div class="px-3 py-1 cursor-pointer hover:bg-gray-200 rounded transition-colors duration-200 text-sm menu-item" onclick="exportData()"> <!-- Changed text-xs to text-sm -->
+            V
+        </div>
+        <div class="dropdown">
+            <div class="px-3 py-1 cursor-pointer hover:bg-gray-200 rounded transition-colors duration-200 text-sm menu-item"> <!-- Changed text-xs to text-sm -->
+                แฟ้ม
+            </div>
+            <div class="dropdown-menu">
+                <a href="#" class="dropdown-item" onclick="newRecord('register_room')">1.ทะเบียน เลขห้อง/ยูนิต</a>
+                <a href="#" class="dropdown-item" onclick="newRecord('register_owner')">2.ทะเบียน เจ้าของร่วม/ลูกค้า</a>
+                <a href="#" class="dropdown-item" onclick="newRecord('register_income_type')">3.ทะเบียน ประเภทรายรับ</a>
+                <a href="#" class="dropdown-item" onclick="newRecord('register_payment_type')">4.ทะเบียน ประเภทเงินรับ</a>
+                <a href="#" class="dropdown-item" onclick="newRecord('register_vehicle')">5.ทะเบียน รถยนต์/สติ้กเกอร์</a>
+                <a href="#" class="dropdown-item" onclick="newRecord('register_phone')">6.ทะเบียน โทรศัพท์ส่วนตัว</a>
+                <a href="#" class="dropdown-item" onclick="newRecord('register_keycard')">7.ทะเบียน บัตรคีย์การ์ด</a>
+                <div class="sub-dropdown">
+                    <a href="#" class="dropdown-item" onclick="newRecord('register_other')">8.ทะเบียน แฟ้มข้อมูลอื่นๆ</a>
+                    <div class="sub-dropdown-menu">
+                        <a href="#" class="dropdown-item" onclick="newRecord('register_project_code')">1.ทะเบียน รหัสโครงการ</a>
+                        <a href="#" class="dropdown-item" onclick="newRecord('register_building_code')">2.ทะเบียน รหัสอาคาร/โซน</a>
+                        <a href="#" class="dropdown-item" onclick="newRecord('register_room_type_code')">3.ทะเบียน รหัสประเภท/แบบห้อง</a>
+                        <a href="#" class="dropdown-item" onclick="newRecord('register_room_status_code')">4.ทะเบียน รหัสสถานะห้องชุด</a>
+                        <a href="#" class="dropdown-item" onclick="newRecord('register_member_type_code')">5.ทะเบียน รหัสประเภทสมาชิก</a>
+                        <a href="#" class="dropdown-item" onclick="newRecord('register_bank_code')">6.ทะเบียน รหัสธนาคาร</a>
+                        <a href="#" class="dropdown-item" onclick="newRecord('register_country_code')">7.ทะเบียน รหัสประเทศ</a>
+                        <a href="#" class="dropdown-item" onclick="newRecord('register_event_behavior')">8.ทะเบียนเหตุการณ์/พฤติกรรม</a>
+                        <a href="#" class="dropdown-item" onclick="newRecord('register_internal_phone')">9.ทะเบียน โทรศัพท์ ภายใน/pabx</a>
+                        <a href="#" class="dropdown-item" onclick="newRecord('register_receipt_book')">10.ทะเบียนเล่มใบเสร็จ</a>
+                        <a href="#" class="dropdown-item" onclick="newRecord('register_product_list')">11.ทะเบียนรายการสินค้า</a>
+                        <a href="#" class="dropdown-item" onclick="newRecord('register_bank_account_code')">12.ทะเบียน รหัสบัญชีเงินฝากธนาคาร</a>
+                        <a href="#" class="dropdown-item" onclick="newRecord('register_progress_rate')">13.ทะเบียนอัตราก้าวหน้า</a>
+                        <a href="#" class="dropdown-item" onclick="newRecord('register_invoice_letter')">14.แบบฟอร์มจดหมายแจ้งหนี้</a>
+                        <a href="#" class="dropdown-item" onclick="newRecord('register_staff_code')">15.ทะเบียนรหัสช่าง/หน่วยงาน/แม่บ้าน</a>
+                        <a href="#" class="dropdown-item" onclick="newRecord('register_maintenance_code')">16.ทะเบียนรหัสรายการซ่อมบำรุง</a>
+                        <a href="#" class="dropdown-item" onclick="newRecord('register_cleaning_code')">17.ทะเบียนรหัสรายการทำความสะอาด</a>
+                    </div>
+                </div>
+                <div class="sub-dropdown">
+                    <a href="#" class="dropdown-item" onclick="newRecord('register_other')">9.ข้อกำหนดระบบ</a>
+                    <div class="sub-dropdown-menu">
+                        <a href="#" class="dropdown-item" onclick="newRecord('register_project_code')">1.ข้อกำหนดมาตรฐานของระบบ</a>
+                        <a href="#" class="dropdown-item" onclick="newRecord('register_building_code')">2.ข้อกำหนดรูปแบบใบแจ้งหนี้/ใบเสร็จ</a>
+                        <a href="#" class="dropdown-item" onclick="newRecord('register_room_type_code')">3.ข้อกำหนดระบบทั่วไป/อื่นๆ</a>
+                        <a href="#" class="dropdown-item" onclick="newRecord('register_room_status_code')">4.รายการค่าใช้จ่ายหลักประจำงวด</a>
+                        <a href="#" class="dropdown-item" onclick="newRecord('register_member_type_code')">5.กำหนดกลุ่มประเภทรายรับ</a>
+                        <a href="#" class="dropdown-item" onclick="newRecord('register_bank_code')">6.กำหนดรหัสรายการพื้นฐาน</a>
+                    </div>
+                </div>
+                <div class="sub-dropdown">
+                    <a href="#" class="dropdown-item" onclick="newRecord('register_other')">10.ระบบการทำงานพิเศษ</a>
+                    <div class="sub-dropdown-menu">
+                        <a href="#" class="dropdown-item" onclick="newRecord('register_project_code')">1.ลบข้อมูลมิเตอร์น้ำ ย้อนหลัง 2 ปี</a>
+                        <a href="#" class="dropdown-item" onclick="newRecord('register_building_code')">2.การแก้ไขปัญหาข้อมูลใบแจ้งหนี้ซ้ำ</a>
+                        <a href="#" class="dropdown-item" onclick="newRecord('register_room_type_code')">3.การแก้ไขปัญหาข้อมูลใบเสร็จซ้ำ</a>
+                        <a href="#" class="dropdown-item" onclick="newRecord('register_room_status_code')">4.บันทึกประวัติการชำระเงินล่าสุด</a>
+                        <a href="#" class="dropdown-item" onclick="newRecord('register_member_type_code')">5.ตรวจสอบการบันทึก/แก้ไขใบแจ้งหนี้</a>
+                        <a href="#" class="dropdown-item" onclick="newRecord('register_bank_code')">6.ตรวจสอบการบันทึก/แก้ไขใบเสร็จ</a>
+                    </div>
+                </div>
+                <a href="#" class="dropdown-item exit" onclick="exitApplication()">Exit</a>
+            </div>
+        </div>
+        <div class="dropdown">
+            <div class="px-3 py-1 cursor-pointer hover:bg-gray-200 rounded transition-colors duration-200 text-sm menu-item"> <!-- Changed text-xs to text-sm -->
+                บันทึก
+            </div>
+            <div class="dropdown-menu">
+                <div class="sub-dropdown">
+                    <a href="#" class="dropdown-item" onclick="newRecord('register_other')">1.บันทึก รายการประจำงวด</a>
+                    <div class="sub-dropdown-menu">
+                        <a href="#" class="dropdown-item" onclick="newRecord('register_project_code')">1.บันทึก มิเตอร์น้ำปะปา</a>
+                        <a href="#" class="dropdown-item" onclick="newRecord('register_building_code')">2.บันทึก มิเตอร์ไฟฟ้า</a>
+                        <a href="#" class="dropdown-item" onclick="newRecord('register_room_type_code')">3.บันทึก ค่าโทรศัพท์</a>
+                        <a href="#" class="dropdown-item" onclick="newRecord('register_room_status_code')">4.ระบบตู้สาขาโทรศัพท์ PABX</a>
+                        <a href="#" class="dropdown-item" onclick="newRecord('register_member_type_code')">5.บันทึก ค่าใช้จ่ายส่วนกลาง</a>
+                        <a href="#" class="dropdown-item" onclick="newRecord('register_bank_code')">6.บันทึก ค่าเช่าห้อง</a>
+                        <a href="#" class="dropdown-item" onclick="newRecord('register_country_code')">7.บันทึก ค่าเช่าอื่นๆ</a>
+                        <a href="#" class="dropdown-item" onclick="newRecord('register_event_behavior')">8.บันทึก รายการประจำงวดอื่นๆ</a>
+                        <a href="#" class="dropdown-item" onclick="newRecord('register_internal_phone')">9.บันทึก สรุปรายการสินค้า</a>
+                        <a href="#" class="dropdown-item" onclick="newRecord('register_receipt_book')">10.บันทึก คำอธิบายรายการประจำงวด</a>
+                        <a href="#" class="dropdown-item" onclick="newRecord('register_product_list')">11.บันทึก ข่าวสาร/หมายเหตุประจำงวด</a>
+                        <a href="#" class="dropdown-item" onclick="newRecord('register_bank_account_code')">12.บันทึก ค่าปรับหนี้ค้างชำระ</a>
+                        <a href="#" class="dropdown-item" onclick="newRecord('register_progress_rate')">13.บันทึก ยอดยกมาประจำงวด</a>
+                    </div>
+                </div>
+                <a href="#" class="dropdown-item" onclick="newRecord('register_owner')">2.ผ่านรายการ ประจำงวด/สร้างใบแจ้งหนี้</a>
+                <a href="#" class="dropdown-item" onclick="newRecord('register_income_type')">3.บันทึก ใบแจ้งค่าใช้จ่าย/พิมพ์ใบแจ้งหนี้</a>
+                <a href="#" class="dropdown-item" onclick="newRecord('register_payment_type')">4.บันทึก การรับชำระเงิน/พิมพ์ใบเสร็จ</a>
+                <a href="#" class="dropdown-item" onclick="newRecord('register_vehicle')">5.บันทึก การรับเช็คล่วงหน้า</a>
+                <a href="#" class="dropdown-item" onclick="newRecord('register_phone')">6.บันทึก การรับฝากเงินส่วนตัว</a>
+                <a href="#" class="dropdown-item" onclick="newRecord('register_keycard')">7.ผ่านรายการเช็ค/สร้างใบเสร็จ</a>
+                <a href="#" class="dropdown-item" onclick="newRecord('register_keycard')">8.บันทึก วันที่นำฝากธนาคาร</a>
+                <a href="#" class="dropdown-item" onclick="newRecord('register_keycard')">9.บันทึก งานช่าง ใบแจ้งซ่อม</a>
+                <a href="#" class="dropdown-item" onclick="newRecord('register_keycard')">10.บันทึก งานแม่บ้าน Cleaning</a>
+                <a href="#" class="dropdown-item" onclick="newRecord('register_keycard')">11.ประมวลผล บัญชีลูกหนี้ใหม่</a>
+            </div>
+        </div>
+        <div class="dropdown">
+            <div class="px-3 py-1 cursor-pointer hover:bg-gray-200 rounded transition-colors duration-200 text-sm menu-item"> <!-- Changed text-xs to text-sm -->
+                สอบถาม
+            </div>
+            <div class="dropdown-menu">
+                <a href="#" class="dropdown-item" onclick="newRecord('register_owner')">1.บัญชีลูกหนี้รายบุคคล</a>
+                <a href="#" class="dropdown-item" onclick="newRecord('register_income_type')">2.ประวัติการชำระเงิน</a>
+                <a href="#" class="dropdown-item" onclick="newRecord('register_payment_type')">3.ทะเบียนห้องชุด/บ้านจัดสรร</a>
+                <a href="#" class="dropdown-item" onclick="newRecord('register_vehicle')">4.ทะเบียนเจ้าของร่วม/ลูกค้า</a>
+                <a href="#" class="dropdown-item" onclick="newRecord('register_phone')">5.ทะเบียนรถยนต์</a>
+                <a href="#" class="dropdown-item" onclick="newRecord('register_keycard')">6.โทรศัพท์ส่วนตัว</a>
+                <a href="#" class="dropdown-item" onclick="newRecord('register_keycard')">7.สถานะใบแจ้งซ่อม</a>
+            </div>
+        </div>
+        <div class="dropdown">
+            <div class="px-3 py-1 cursor-pointer hover:bg-gray-200 rounded transition-colors duration-200 text-sm menu-item"> <!-- Changed text-xs to text-sm -->
+                รายงาน
+            </div>
+            <div class="dropdown-menu">
+                <div class="sub-dropdown">
+                    <a href="#" class="dropdown-item" onclick="newRecord('register_other')">1.รายงาน ทะเบียนแฟ้มข้อมูล</a>
+                    <div class="sub-dropdown-menu">
+                        <a href="#" class="dropdown-item" onclick="newRecord('register_project_code')">1.รายงาน ทะเบียนห้อง/ยูนิต/บ้านจัดสรร</a>
+                        <a href="#" class="dropdown-item" onclick="newRecord('register_building_code')">2.รายงาน ทะเบียนเจ้าของร่วม/ลูกค้า</a>
+                        <a href="#" class="dropdown-item" onclick="newRecord('register_room_type_code')">3.รายงานสัญญาเช่าหมดอายุ</a>
+                        <a href="#" class="dropdown-item" onclick="newRecord('register_room_status_code')">4.จ่าหน้าซองจดหมาย</a>
+                        <a href="#" class="dropdown-item" onclick="newRecord('register_member_type_code')">5.รายชื่อเจ้าของร่วมเพื่อการประชุม</a>
+                        <a href="#" class="dropdown-item" onclick="newRecord('register_bank_code')">6.พิมพ์แบบจดหมายตอบรับ</a>
+                    </div>
+                </div>
+                <div class="sub-dropdown">
+                    <a href="#" class="dropdown-item" onclick="newRecord('register_other')">2.รายงาน บันทึกประจำงวด</a>
+                    <div class="sub-dropdown-menu">
+                        <a href="#" class="dropdown-item" onclick="newRecord('register_project_code')">1.รายงาน บันทึกน้ำประปา</a>
+                        <a href="#" class="dropdown-item" onclick="newRecord('register_building_code')">2.รายงาน บันทึกไฟฟ้า</a>
+                        <a href="#" class="dropdown-item" onclick="newRecord('register_room_type_code')">3.รายงาน บันทึกค่าโทรศัพท์</a>
+                        <a href="#" class="dropdown-item" onclick="newRecord('register_room_status_code')">4.รายงาน ค่าใช้จ่ายส่วนกลาง</a>
+                        <a href="#" class="dropdown-item" onclick="newRecord('register_member_type_code')">5.รายงาน บันทึกค่าเช่าห้อง</a>
+                        <a href="#" class="dropdown-item" onclick="newRecord('register_bank_code')">6.รายงาน บันทึกค่าเช่าอื่นๆ</a>
+                        <a href="#" class="dropdown-item" onclick="newRecord('register_bank_code')">7.รายงาน บันทึกประจำงวดอื่นๆ</a>
+                    </div>
+                </div>
+                <div class="sub-dropdown">
+                    <a href="#" class="dropdown-item" onclick="newRecord('register_other')">3.รายงาน การแจ้งหนี้</a>
+                    <div class="sub-dropdown-menu">
+                        <a href="#" class="dropdown-item" onclick="newRecord('register_project_code')">1.รายงาน ใบแจ้งค่าใช้จ่าย</a>
+                        <a href="#" class="dropdown-item" onclick="newRecord('register_building_code')">2.รายงาน สรุปการแจ้งหนี้รายบุคคลประจำงวด</a>
+                        <a href="#" class="dropdown-item" onclick="newRecord('register_room_type_code')">3.รายงาน การแจ้งค่าใช้จ่ายแยกประเภท</a>
+                        <a href="#" class="dropdown-item" onclick="newRecord('register_room_status_code')">4.รายงาน สรุปการแจ้งค่าใช้จ่ายประจำงวด</a>
+                    </div>
+                </div>
+                <div class="sub-dropdown">
+                    <a href="#" class="dropdown-item" onclick="newRecord('register_other')">4.รายงาน การรับเงิน</a>
+                    <div class="sub-dropdown-menu">
+                        <a href="#" class="dropdown-item" onclick="newRecord('register_project_code')">1.รายงาน ใบเสร็จรับเงิน</a>
+                        <a href="#" class="dropdown-item" onclick="newRecord('register_building_code')">2.รายงาน ใบนำส่งเงินประจำวัน</a>
+                        <a href="#" class="dropdown-item" onclick="newRecord('register_room_type_code')">3.รายงาน สรุปการรับเงินรายวัน</a>
+                        <a href="#" class="dropdown-item" onclick="newRecord('register_room_status_code')">4.รายงาน การตรวจสอบใบเสร็จรับเงิน</a>
+                        <a href="#" class="dropdown-item" onclick="newRecord('register_room_status_code')">5.รายงาน รายรับแยกประเภท</a>
+                        <a href="#" class="dropdown-item" onclick="newRecord('register_room_status_code')">6.รายงาน สรุปรายรับแยกประเภท</a>
+                        <a href="#" class="dropdown-item" onclick="newRecord('register_room_status_code')">7.รายงาน การรับเงินตามบุคคล</a>
+                        <a href="#" class="dropdown-item" onclick="newRecord('register_room_status_code')">8.รายงาน การฝากเงินส่วนตัว</a>
+                        <a href="#" class="dropdown-item" onclick="newRecord('register_room_status_code')">9.รายงาน ภาษีขาย</a>
+                        <a href="#" class="dropdown-item" onclick="newRecord('register_room_status_code')">10.รายงาน ภาษีหัก ณ ที่จ่าย</a>
+                    </div>
+                </div>
+                <div class="sub-dropdown">
+                    <a href="#" class="dropdown-item" onclick="newRecord('register_other')">5.รายงาน บัญชีลูกหนี้</a>
+                    <div class="sub-dropdown-menu">
+                        <a href="#" class="dropdown-item" onclick="newRecord('register_project_code')">1.รายงาน การเคลื่อนไหวบัญชีลูกหนี้</a>
+                        <a href="#" class="dropdown-item" onclick="newRecord('register_building_code')">2.รายงาน ลูกหนี้ค้างชำระรายบุคคล</a>
+                        <a href="#" class="dropdown-item" onclick="newRecord('register_room_type_code')">3.รายงาน รายการบิลค้างชำระ</a>
+                        <a href="#" class="dropdown-item" onclick="newRecord('register_room_status_code')">4.รายงาน สรุปบัญชีลูกหนี้รายบุคคล</a>
+                        <a href="#" class="dropdown-item" onclick="newRecord('register_room_status_code')">5.รายงาน สรุปการชำระหนี้</a>
+                        <a href="#" class="dropdown-item" onclick="newRecord('register_room_status_code')">6.รายงาน สรุปรายรับแยกประเภท</a>
+                        <a href="#" class="dropdown-item" onclick="newRecord('register_room_status_code')">7.รายงาน สรุปหนี้ค้างชำระรายเดือน</a>
+                        <a href="#" class="dropdown-item" onclick="newRecord('register_room_status_code')">8.รายงาน สรุปการวิเคราะห์อายุหนี้</a>
+                        <a href="#" class="dropdown-item" onclick="newRecord('register_room_status_code')">9.รายงาน สรุปบัญชีลูกหนี้แยกประเภท</a>
+                    </div>
+                </div>
+                <div class="sub-dropdown">
+                    <a href="#" class="dropdown-item" onclick="newRecord('register_other')">6.รายงาน อื่นๆ</a>
+                    <div class="sub-dropdown-menu">
+                        <a href="#" class="dropdown-item" onclick="newRecord('register_project_code')">1.หนังสือเตือน ให้ชำระค่าใช้จ่าย</a>
+                        <a href="#" class="dropdown-item" onclick="newRecord('register_building_code')">2.รายงาน ทะเบียนเงินฝากส่วนตัว</a>
+                        <a href="#" class="dropdown-item" onclick="newRecord('register_room_type_code')">3.รายงานสถานะใบแจ้งซ่อม</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="px-3 py-1 cursor-pointer hover:bg-gray-200 rounded transition-colors duration-200 text-sm menu-item"> <!-- Changed text-xs to text-sm -->
+            คู่มือ
+        </div>
+        <div class="px-3 py-1 cursor-pointer hover:bg-gray-200 rounded transition-colors duration-200 text-sm menu-item"> <!-- Changed text-xs to text-sm -->
+            ระบบ
+        </div>
+        <div class="px-3 py-1 cursor-pointer hover:bg-gray-200 rounded transition-colors duration-200 text-sm menu-item" onclick="exitApplication()"> <!-- Changed text-xs to text-sm -->
+            ออกจากโปรแกรม
+        </div>
+
+        <!-- Mobile Menu Button -->
+        <div class="md:hidden">
+            <button id="mobile-menu-btn" class="px-2 py-1 text-gray-600 hover:text-gray-900 focus:outline-none focus:text-gray-900 transition-colors duration-200">
+                <i class="fas fa-bars text-base"></i> <!-- Changed text-lg to text-base for proportionality -->
+            </button>
+        </div>
+    </div>
+
+    <!-- Mobile Menu -->
+    <div id="mobile-menu" class="hidden md:hidden bg-white border-b border-gray-200 shadow-lg">
+        <div class="px-4 py-2 space-y-1">
+            <div class="block px-3 py-2 text-sm text-gray-700 hover:bg-gray-50 rounded cursor-pointer" onclick="exportData()"> <!-- Changed text-xs to text-sm -->
+                V
+            </div>
+            <div class="dropdown">
+                <div class="block px-3 py-2 text-sm text-gray-700 hover:bg-gray-50 rounded cursor-pointer"> <!-- Changed text-xs to text-sm -->
+                    แฟ้ม
+                </div>
+                <div class="dropdown-menu">
+                    <a href="#" class="dropdown-item" onclick="newRecord('register_room')">1.ทะเบียน เลขห้อง/ยูนิต</a>
+                    <a href="#" class="dropdown-item" onclick="newRecord('register_owner')">2.ทะเบียน เจ้าของร่วม/ลูกค้า</a>
+                    <a href="#" class="dropdown-item" onclick="newRecord('register_income_type')">3.ทะเบียน ประเภทรายรับ</a>
+                    <a href="#" class="dropdown-item" onclick="newRecord('register_payment_type')">4.ทะเบียน ประเภทเงินรับ</a>
+                    <a href="#" class="dropdown-item" onclick="newRecord('register_vehicle')">5.ทะเบียน รถยนต์/สติ้กเกอร์</a>
+                    <a href="#" class="dropdown-item" onclick="newRecord('register_phone')">6.ทะเบียน โทรศัพท์ส่วนตัว</a>
+                    <a href="#" class="dropdown-item" onclick="newRecord('register_keycard')">7.ทะเบียน บัตรคีย์การ์ด</a>
+                    <div class="sub-dropdown">
+                        <a href="#" class="dropdown-item" onclick="newRecord('register_other')">8.ทะเบียน แฟ้มข้อมูลอื่นๆ</a>
+                        <div class="sub-dropdown-menu">
+                            <a href="#" class="dropdown-item" onclick="newRecord('register_project_code')">1.ทะเบียน รหัสโครงการ</a>
+                            <a href="#" class="dropdown-item" onclick="newRecord('register_building_code')">2.ทะเบียน รหัสอาคาร/โซน</a>
+                            <a href="#" class="dropdown-item" onclick="newRecord('register_room_type_code')">3.ทะเบียน รหัสประเภท/แบบห้อง</a>
+                            <a href="#" class="dropdown-item" onclick="newRecord('register_room_status_code')">4.ทะเบียน รหัสสถานะห้องชุด</a>
+                            <a href="#" class="dropdown-item" onclick="newRecord('register_member_type_code')">5.ทะเบียน รหัสประเภทสมาชิก</a>
+                            <a href="#" class="dropdown-item" onclick="newRecord('register_bank_code')">6.ทะเบียน รหัสธนาคาร</a>
+                            <a href="#" class="dropdown-item" onclick="newRecord('register_country_code')">7.ทะเบียน รหัสประเทศ</a>
+                            <a href="#" class="dropdown-item" onclick="newRecord('register_event_behavior')">8.ทะเบียนเหตุการณ์/พฤติกรรม</a>
+                            <a href="#" class="dropdown-item" onclick="newRecord('register_internal_phone')">9.ทะเบียน โทรศัพท์ ภายใน/pabx</a>
+                            <a href="#" class="dropdown-item" onclick="newRecord('register_receipt_book')">10.ทะเบียนเล่มใบเสร็จ</a>
+                            <a href="#" class="dropdown-item" onclick="newRecord('register_product_list')">11.ทะเบียนรายการสินค้า</a>
+                            <a href="#" class="dropdown-item" onclick="newRecord('register_bank_account_code')">12.ทะเบียน รหัสบัญชีเงินฝากธนาคาร</a>
+                            <a href="#" class="dropdown-item" onclick="newRecord('register_progress_rate')">13.ทะเบียนอัตราก้าวหน้า</a>
+                            <a href="#" class="dropdown-item" onclick="newRecord('register_invoice_letter')">14.แบบฟอร์มจดหมายแจ้งหนี้</a>
+                            <a href="#" class="dropdown-item" onclick="newRecord('register_staff_code')">15.ทะเบียนรหัสช่าง/หน่วยงาน/แม่บ้าน</a>
+                            <a href="#" class="dropdown-item" onclick="newRecord('register_maintenance_code')">16.ทะเบียนรหัสรายการซ่อมบำรุง</a>
+                            <a href="#" class="dropdown-item" onclick="newRecord('register_cleaning_code')">17.ทะเบียนรหัสรายการทำความสะอาด</a>
+                        </div>
+                    </div>
+                    <a href="#" class="dropdown-item" onclick="newRecord('system_settings')">9.ข้อกำหนดระบบ</a>
+                    <a href="#" class="dropdown-item" onclick="newRecord('special_operations')">10.ระบบการทำงานพิเศษ</a>
+                    <a href="#" class="dropdown-item exit" onclick="exitApplication()">Exit</a>
+                </div>
+            </div>
+            <div class="block px-3 py-2 text-sm text-gray-700 hover:bg-gray-50 rounded cursor-pointer" onclick="refreshData()"> <!-- Changed text-xs to text-sm -->
+                บันทึก
+            </div>
+            <div class="block px-3 py-2 text-sm text-gray-700 hover:bg-gray-50 rounded cursor-pointer" onclick="printReport()"> <!-- Changed text-xs to text-sm -->
+                สอบถาม
+            </div>
+            <div class="block px-3 py-2 text-sm text-gray-700 hover:bg-gray-50 rounded cursor-pointer"> <!-- Changed text-xs to text-sm -->
+                รายงาน
+            </div>
+            <div class="block px-3 py-2 text-sm text-gray-700 hover:bg-gray-50 rounded cursor-pointer"> <!-- Changed text-xs to text-sm -->
+                คู่มือ
+            </div>
+            <div class="block px-3 py-2 text-sm text-red-600 hover:bg-red-50 rounded cursor-pointer" onclick="exitApplication()"> <!-- Changed text-xs to text-sm -->
+                ออกจากโปรแกรม
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Content -->
+    <main class="flex-1 bg-gray-100">
+        <!-- Messages -->
+        {% if messages %}
+            <div class="absolute top-16 right-4 z-50 space-y-2 max-w-sm" id="messages-container">
+                {% for message in messages %}
+                    <div class="fade-in relative bg-white border-l-4 rounded-r-lg shadow-lg p-3 pr-10
+                        {% if message.tags == 'success' %}border-green-500 bg-green-50{% endif %}
+                        {% if message.tags == 'error' %}border-red-500 bg-red-50{% endif %}
+                        {% if message.tags == 'warning' %}border-yellow-500 bg-yellow-50{% endif %}
+                        {% if message.tags == 'info' %}border-blue-500 bg-blue-50{% endif %}">
+                        
+                        <div class="flex items-start">
+                            <div class="flex-shrink-0">
+                                {% if message.tags == 'success' %}
+                                    <i class="fas fa-check-circle text-green-500 text-base"></i> <!-- Changed text-sm to text-base -->
+                                {% elif message.tags == 'error' %}
+                                    <i class="fas fa-exclamation-circle text-red-500 text-base"></i> <!-- Changed text-sm to text-base -->
+                                {% elif message.tags == 'warning' %}
+                                    <i class="fas fa-exclamation-triangle text-yellow-500 text-base"></i> <!-- Changed text-sm to text-base -->
+                                {% else %}
+                                    <i class="fas fa-info-circle text-blue-500 text-base"></i> <!-- Changed text-sm to text-base -->
+                                {% endif %}
+                            </div>
+                            <div class="ml-2">
+                                <p class="text-sm <!-- Changed text-xs to text-sm -->
+                                    {% if message.tags == 'success' %}text-green-800{% endif %}
+                                    {% if message.tags == 'error' %}text-red-800{% endif %}
+                                    {% if message.tags == 'warning' %}text-yellow-800{% endif %}
+                                    {% if message.tags == 'info' %}text-blue-800{% endif %}">
+                                    {{ message }}
+                                </p>
+                            </div>
+                        </div>
+                        
+                        <!-- Close button -->
+                        <button type="button" onclick="dismissAlert(this)" class="absolute top-2 right-2 text-gray-400 hover:text-gray-600 focus:outline-none focus:text-gray-600 transition-colors duration-200">
+                            <span class="sr-only">ปิด</span>
+                            <i class="fas fa-times text-sm"></i> <!-- Changed text-xs to text-sm -->
+                        </button>
+                    </div>
+                {% endfor %}
+            </div>
+        {% endif %}
+
+        <!-- Content Block -->
+        {% block content %}
+        <div class="p-4">
+            <div class="text-center py-20">
+                <h1 class="text-3xl font-bold text-gray-700 mb-4">ยินดีต้อนรับสู่ระบบจัดการใบเสร็จ</h1> <!-- Changed text-2xl to text-3xl -->
+                <p class="text-base text-gray-500">เลือกเมนูเพื่อเริ่มใช้งาน</p> <!-- Changed text-gray-500 to text-base -->
+            </div>
+        </div>
+        {% endblock %}
+    </main>
+
+    <!-- Footer -->
+    <footer class="bg-white border-t border-gray-200 py-3 mt-auto">
+        <div class="max-w-7xl mx-auto px-4">
+            <div class="text-center">
+                <p class="text-sm text-gray-500"> <!-- Changed text-xs to text-sm -->
+                    © 2025 Softbiz - ระบบจัดการใบเสร็จ | Version 1.0
+                </p>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        // Mobile menu toggle
+        document.getElementById('mobile-menu-btn').addEventListener('click', function() {
+            const mobileMenu = document.getElementById('mobile-menu');
+            const isHidden = mobileMenu.classList.contains('hidden');
+            
+            if (isHidden) {
+                mobileMenu.classList.remove('hidden');
+                mobileMenu.classList.add('fade-in');
+            } else {
+                mobileMenu.classList.add('hidden');
+                mobileMenu.classList.remove('fade-in');
+            }
+        });
+
+        // Alert dismiss function
+        function dismissAlert(button) {
+            const alert = button.closest('.relative');
+            alert.style.transform = 'translateX(100%)';
+            alert.style.opacity = '0';
+            alert.style.transition = 'all 0.3s ease-out';
+            
+            setTimeout(() => {
+                alert.remove();
+                
+                // Remove messages container if no more messages
+                const container = document.getElementById('messages-container');
+                if (container && container.children.length === 0) {
+                    container.remove();
+                }
+            }, 300);
+        }
+
+        // Auto-dismiss alerts after 5 seconds
+        document.addEventListener('DOMContentLoaded', function() {
+            const alerts = document.querySelectorAll('#messages-container .relative');
+            alerts.forEach(alert => {
+                setTimeout(() => {
+                    const closeBtn = alert.querySelector('button');
+                    if (closeBtn) {
+                        dismissAlert(closeBtn);
+                    }
+                }, 5000);
+            });
+        });
+
+        // Smooth scroll for anchor links
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function (e) {
+                e.preventDefault();
+                const target = document.querySelector(this.getAttribute('href'));
+                if (target) {
+                    target.scrollIntoView({
+                        behavior: 'smooth',
+                        block: 'start'
+                    });
+                }
+            });
+        });
+
+        // Menu functions - you can implement these based on your needs
+        function exportData() {
+            console.log('Export data function called');
+            showMessage('กำลังส่งออกข้อมูล...', 'info');
+        }
+
+        function newRecord(type) {
+            console.log(`New record function called for ${type || 'default'}`);
+            showMessage(`เพิ่มข้อมูลใหม่ - ${type || 'ทั่วไป'}`, 'success');
+            // Add logic here based on type if needed
+        }
+
+        function refreshData() {
+            console.log('Refresh data function called');
+            window.location.reload();
+        }
+
+        function printReport() {
+            console.log('Print report function called');
+            window.print();
+        }
+
+        function exitApplication() {
+            if (confirm('ต้องการออกจากโปรแกรมหรือไม่?')) {
+                window.close();
+            }
+        }
+
+        // Show message function for dynamic messages
+        function showMessage(message, type = 'info') {
+            const container = document.getElementById('messages-container') || createMessageContainer();
+            
+            const messageDiv = document.createElement('div');
+            messageDiv.className = `fade-in relative bg-white border-l-4 rounded-r-lg shadow-lg p-3 pr-10 ${getMessageClasses(type)}`;
+            
+            messageDiv.innerHTML = `
+                <div class="flex items-start">
+                    <div class="flex-shrink-0">
+                        ${getMessageIcon(type)}
+                    </div>
+                    <div class="ml-2">
+                        <p class="text-sm ${getMessageTextColor(type)}">${message}</p> <!-- Changed text-xs to text-sm -->
+                    </div>
+                </div>
+                <button type="button" onclick="dismissAlert(this)" class="absolute top-2 right-2 text-gray-400 hover:text-gray-600 focus:outline-none focus:text-gray-600 transition-colors duration-200">
+                    <span class="sr-only">ปิด</span>
+                    <i class="fas fa-times text-sm"></i> <!-- Changed text-xs to text-sm -->
+                </button>
+            `;
+            
+            container.appendChild(messageDiv);
+            
+            // Auto-dismiss after 5 seconds
+            setTimeout(() => {
+                const closeBtn = messageDiv.querySelector('button');
+                if (closeBtn) {
+                    dismissAlert(closeBtn);
+                }
+            }, 5000);
+        }
+
+        function createMessageContainer() {
+            const container = document.createElement('div');
+            container.id = 'messages-container';
+            container.className = 'absolute top-16 right-4 z-50 space-y-2 max-w-sm';
+            document.body.appendChild(container);
+            return container;
+        }
+
+        function getMessageClasses(type) {
+            const classes = {
+                'success': 'border-green-500 bg-green-50',
+                'error': 'border-red-500 bg-red-50',
+                'warning': 'border-yellow-500 bg-yellow-50',
+                'info': 'border-blue-500 bg-blue-50'
+            };
+            return classes[type] || classes['info'];
+        }
+
+        function getMessageIcon(type) {
+            const icons = {
+                'success': '<i class="fas fa-check-circle text-green-500 text-base"></i>', <!-- Changed text-sm to text-base -->
+                'error': '<i class="fas fa-exclamation-circle text-red-500 text-base"></i>', <!-- Changed text-sm to text-base -->
+                'warning': '<i class="fas fa-exclamation-triangle text-yellow-500 text-base"></i>', <!-- Changed text-sm to text-base -->
+                'info': '<i class="fas fa-info-circle text-blue-500 text-base"></i>' <!-- Changed text-sm to text-base -->
+            };
+            return icons[type] || icons['info'];
+        }
+
+        function getMessageTextColor(type) {
+            const colors = {
+                'success': 'text-green-800',
+                'error': 'text-red-800',
+                'warning': 'text-yellow-800',
+                'info': 'text-blue-800'
+            };
+            return colors[type] || colors['info'];
+        }
+
+        // Keyboard shortcuts
+        document.addEventListener('keydown', function(e) {
+            // Ctrl+N for new record
+            if (e.ctrlKey && e.key === 'n') {
+                e.preventDefault();
+                newRecord();
+            }
+            // Ctrl+S for save/refresh
+            else if (e.ctrlKey && e.key === 's') {
+                e.preventDefault();
+                refreshData();
+            }
+            // Ctrl+P for print
+            else if (e.ctrlKey && e.key === 'p') {
+                e.preventDefault();
+                printReport();
+            }
+            // Alt+F4 for exit
+            else if (e.altKey && e.key === 'F4') {
+                e.preventDefault();
+                exitApplication();
+            }
+        });
+    </script>
+    
+    {% block extra_js %}
+    <!-- Flowbite JS -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/flowbite/2.2.1/flowbite.min.js"></script>
+    {% endblock %}
+</body>
+</html>
