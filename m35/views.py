@@ -7,13 +7,23 @@ import json
 from django.core.serializers.json import DjangoJSONEncoder
 from django.http import JsonResponse
 
+
 def m35(request):
 
-    data = CmtRctr.objects.all()
-    data_value = CmtRctr.objects.all().values()
+    data = CmtRctr.objects.all().order_by('id')
+    data_value = CmtRctr.objects.all().values().order_by('-id')
     data_list = list(data_value)
     if request.method == "POST":
         form = CmtRctrForm(request.POST)
+        record_id = request.POST.get('id')
+
+        if record_id:
+            try:
+                instance = CmtRctr.objects.get(pk=record_id)  # ✅ โหลด record เดิม
+                form = CmtRctrForm(request.POST, instance=instance)  # ✅ ใช้ instance เดิม
+            except CmtRctr.DoesNotExist:
+                return JsonResponse({'status': 'error', 'message': 'ไม่พบข้อมูลเดิม'}, status=404)
+            
         if form.is_valid():
             form.save()
             # messages.success(request, "เพิ่มเรียบร้อยแล้ว!")

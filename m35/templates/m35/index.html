@@ -144,13 +144,13 @@
                         หน้า 1 / 3 (1-3 จาก 25) | 
                     </div>
                     <button type="button" class="w-16 gradient-gray border border-gray-600 py-0.5 cursor-pointer hover:bg-gray-300 ml-2 rounded text-green-600" 
-                     onclick="">F2 เพิ่ม</button>
+                     onclick="new_Record()">F2 เพิ่ม</button>
                     <button type="button" class="w-16 gradient-gray border border-gray-600 py-0.5 cursor-pointer hover:bg-gray-300 ml-2 rounded text-orange-600" 
                      onclick="saveRecord()">F2 บันทึก</button>
                     <button type="button" class="w-16 gradient-gray border border-gray-600 py-0.5 cursor-pointer hover:bg-gray-300 ml-2 rounded text-blue-900" 
-                     onclick="">F3 แก้ไข</button>
+                     onclick="editRecord()">F3 แก้ไข</button>
                      <button type="button" class="w-16 gradient-gray border border-gray-600 py-0.5 cursor-pointer hover:bg-gray-300 ml-2 rounded text-red-600" 
-                     onclick="">F4 ลบ</button>
+                     onclick="deleteRecord()">F4 ลบ</button>
                     <button type="button" class="w-16 gradient-gray border border-gray-600 py-0.5 cursor-pointer hover:bg-gray-300 ml-2 rounded text-purple-600" 
                      onclick="">F5 ค้นหา</button>
                     <button type="button" class="w-16 gradient-gray border border-gray-600 py-0.5 cursor-pointer hover:bg-gray-300 ml-2 rounded text-blue-600" 
@@ -485,16 +485,70 @@
                 input.disabled = true;
                 
                 if (['text', 'date', 'number'].includes(input.type)) {
-                    input.style.backgroundColor = (mode === 'view') ? '#f0f0f0' : '#ffffff';  // เทาอ่อน vs ขาว
+                    input.style.backgroundColor = '#f0f0f0';  // เทาอ่อน vs ขาว
                 }
                 
             });
         } else if (mode === 'edit' || mode === 'new') {
             inputs.forEach(input => {
                 input.disabled = false;
-                // input.classList.remove('bg-gray-50');
-                // input.classList.add('bg-white');
+                if (['text', 'date', 'number'].includes(input.type)) {
+                    input.style.backgroundColor = '#ffffff';  // เทาอ่อน vs ขาว
+                }
             });
+        }
+    }
+
+    // Clear form
+    function clearForm() {
+        document.querySelectorAll('#formSection input[type="text"], #formSection input[type="date"]').forEach(input => {
+            input.value = '';
+        });
+        document.querySelectorAll('#formSection input[type="radio"], #formSection input[type="checkbox"]').forEach(input => {
+            input.checked = false;
+        });
+        currentRecordId = null;
+    }
+
+    // New record
+    function new_Record() {
+        console.log('newrecord...');
+        // Clear form
+        document.querySelectorAll('#formSection input[type="text"], #formSection input[type="date"]').forEach(input => {
+            input.value = '';
+        });
+        
+        document.querySelectorAll('#formSection input[type="radio"], #formSection input[type="checkbox"]').forEach(input => {
+            input.checked = false;
+        });
+
+        // Set current date
+        const today = new Date();
+        let data1 = JSON.parse(`{{ data_json|safe|escapejs }}`);
+
+        // แยก string ด้วย '/'
+        let [a, b] = data1[0].r_c_no.split('/');  // ['ABC', '005']
+
+        b = parseInt(b, 10) + 1;  // แปลงเป็น int แล้ว +1
+
+        // แปลง b ให้เป็น string 3 หลัก โดยเติม 0 ข้างหน้า
+        b = b.toString().padStart(3, '0');  // เช่น 6 => "006"
+
+        // รวมกลับด้วย '/'
+        let result = [a, b].join('/');
+
+        document.getElementById('r_c_no').value = result;
+        document.getElementById('date').value = today.toISOString().split('T')[0];
+
+        console.log(result);
+        
+        currentRecordId = null;
+        setFormMode('new');
+        
+        // Clear table selection
+        if (selectedRow) {
+            selectedRow.classList.remove('!bg-red-100');
+            selectedRow = null;
         }
     }
 
@@ -646,6 +700,10 @@
         formData.append('remark_1', document.getElementById('remark_1').value);
         formData.append('remark_2', document.getElementById('remark_2').value);
 
+        if (currentRecordId) {
+        formData.append('id', currentRecordId);
+        }
+
         // Validate required fields
         if (!formData.get('r_c_no') || !formData.get('date') || !formData.get('member_1')) {
             showMessage('กรุณากรอกข้อมูลที่จำเป็นให้ครบถ้วน', 'error');
@@ -670,6 +728,20 @@
             if (data.status === 'success' || data.message.includes('เพิ่มเรียบร้อยแล้ว')) {
                 showMessage(data.message || 'บันทึกข้อมูลเรียบร้อยแล้ว', 'success');
                 setFormMode('view');
+
+                setTimeout(() => {
+                window.location.reload();  // ✅ รีโหลดทั้งหน้า
+                }, 1000);  // รอ 1 วินาทีให้แสดงข้อความก่อน
+
+                // // Clear form
+                // document.querySelectorAll('#formSection input[type="text"], #formSection input[type="date"]').forEach(input => {
+                //     input.value = '';
+                // });
+                
+                // document.querySelectorAll('#formSection input[type="radio"], #formSection input[type="checkbox"]').forEach(input => {
+                //     input.checked = false;
+            // });
+
             } else {
                 showMessage(data.message || 'เกิดข้อผิดพลาดในการบันทึกข้อมูล', 'error');
             }
@@ -678,6 +750,9 @@
             hideLoading();
             showMessage(error.message || 'เกิดข้อผิดพลาดในการติดต่อ server', 'error');
         });
+
+        
+
         // Simulate save (replace with actual AJAX call)
         // setTimeout(() => {
         //     hideLoading();
@@ -694,6 +769,14 @@
         // }, 1000);
     }
 
+    // Edit record
+    function editRecord() {
+        if (currentRecordId) {
+            setFormMode('edit');
+        } else {
+            showMessage('กรุณาเลือกข้อมูลที่ต้องการแก้ไข', 'error');
+        }
+    }
 
     // Delete record
     function deleteRecord() {

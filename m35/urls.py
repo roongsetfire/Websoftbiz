@@ -5,5 +5,5 @@ app_name = "m35"
 
 urlpatterns = [
     path("", views.m35, name="m35"),
-   
+
 ]
