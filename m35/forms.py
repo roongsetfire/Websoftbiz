@@ -30,6 +30,6 @@ class CmtRctrForm(forms.ModelForm):
             "no_ref",
             "remark_1",
             "remark_2",
-            "textstamp",
+            # "textstamp",
             # "timestamp",
         ]

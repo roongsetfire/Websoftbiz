@@ -5,6 +5,7 @@ from django.http import HttpResponse
 from .models import CmtRctr
 import json
 from django.core.serializers.json import DjangoJSONEncoder
+from django.http import JsonResponse
 
 def m35(request):
 
@@ -15,11 +16,17 @@ def m35(request):
         form = CmtRctrForm(request.POST)
         if form.is_valid():
             form.save()
-            messages.success(request, "เพิ่มเรียบร้อยแล้ว!")
+            # messages.success(request, "เพิ่มเรียบร้อยแล้ว!")
+            return JsonResponse({'status': 'success', 'message': 'เพิ่มเรียบร้อยแล้ว!'})
         else:
-            messages.error(request, "กรุณาตรวจสอบข้อมูลให้ถูกต้อง")
-    else:
-        form = CmtRctrForm()
+            # print("Form errors:", form.errors)  # ✅ DEBUG ERROR ใน Terminal
+            # messages.error(request, "กรุณาตรวจสอบข้อมูลให้ถูกต้อง")
+            errors = form.errors.as_json()
+            return JsonResponse({'status': 'error', 'message': 'ข้อมูลไม่ถูกต้อง', 'errors': errors}, status=400)
+    # else:
+    #     form = CmtRctrForm()
+
+    # print('form',form)
 
     context = {
         'row_numbers': range(1, 10),  # 1 ถึง 15

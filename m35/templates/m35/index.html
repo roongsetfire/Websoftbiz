@@ -145,15 +145,15 @@
                     </div>
                     <button type="button" class="w-16 gradient-gray border border-gray-600 py-0.5 cursor-pointer hover:bg-gray-300 ml-2 rounded text-green-600" 
                      onclick="">F2 เพิ่ม</button>
-                     <button type="button" class="w-16 gradient-gray border border-gray-600 py-0.5 cursor-pointer hover:bg-gray-300 ml-2 rounded text-orange-600" 
-                     onclick="">F2 บันทึก</button>
+                    <button type="button" class="w-16 gradient-gray border border-gray-600 py-0.5 cursor-pointer hover:bg-gray-300 ml-2 rounded text-orange-600" 
+                     onclick="saveRecord()">F2 บันทึก</button>
                     <button type="button" class="w-16 gradient-gray border border-gray-600 py-0.5 cursor-pointer hover:bg-gray-300 ml-2 rounded text-blue-900" 
                      onclick="">F3 แก้ไข</button>
                      <button type="button" class="w-16 gradient-gray border border-gray-600 py-0.5 cursor-pointer hover:bg-gray-300 ml-2 rounded text-red-600" 
                      onclick="">F4 ลบ</button>
                     <button type="button" class="w-16 gradient-gray border border-gray-600 py-0.5 cursor-pointer hover:bg-gray-300 ml-2 rounded text-purple-600" 
                      onclick="">F5 ค้นหา</button>
-                     <button type="button" class="w-16 gradient-gray border border-gray-600 py-0.5 cursor-pointer hover:bg-gray-300 ml-2 rounded text-blue-600" 
+                    <button type="button" class="w-16 gradient-gray border border-gray-600 py-0.5 cursor-pointer hover:bg-gray-300 ml-2 rounded text-blue-600" 
                      onclick="">F6 พิมพ์</button>
                     <button type="button" class="w-16 gradient-gray border border-gray-600 py-0.5 cursor-pointer hover:bg-gray-300 ml-2 rounded text-yellow-500" 
                      onclick="">ESC ออก</button>
@@ -455,11 +455,48 @@
         window.print();
     }
 
+    // Show loading
+    function showLoading() {
+        document.getElementById('loading').classList.remove('hidden');
+    }
+
+    // Hide loading
+    function hideLoading() {
+        document.getElementById('loading').classList.add('hidden');
+    }
+
     // // บิลค้างชำระ
     // function getRadio1() {
     //     const selected = document.querySelector('input[name="type"]:checked');
     //     alert("คุณเลือก: " + (selected ? selected.value : "ยังไม่ได้เลือก"));
     // }
+
+    // Set form mode
+    function setFormMode(mode) {
+        formMode = mode;
+        const inputs = document.querySelectorAll('#formSection input[type="text"], ' +
+            '#formSection input[type="date"], ' +
+            '#formSection input[type="radio"], ' +
+            '#formSection input[type="checkbox"]'
+        );
+        
+        if (mode === 'view') {
+            inputs.forEach(input => {
+                input.disabled = true;
+                
+                if (['text', 'date', 'number'].includes(input.type)) {
+                    input.style.backgroundColor = (mode === 'view') ? '#f0f0f0' : '#ffffff';  // เทาอ่อน vs ขาว
+                }
+                
+            });
+        } else if (mode === 'edit' || mode === 'new') {
+            inputs.forEach(input => {
+                input.disabled = false;
+                // input.classList.remove('bg-gray-50');
+                // input.classList.add('bg-white');
+            });
+        }
+    }
 
     // Select record in table
     function selectRecord(row, recordId) {
@@ -542,8 +579,119 @@
 
         
         
-        // currentRecordId = recordId;
-        // setFormMode('view');
+        currentRecordId = recordId;
+        console.log(currentRecordId)
+        setFormMode('view');
+    }
+
+    function getCookie(name) {
+        // ฟังก์ชันช่วยดึงค่า CSRF token จาก cookie
+        let cookieValue = null;
+        if (document.cookie) {
+            const cookies = document.cookie.split(';');
+            for (let cookie of cookies) {
+                cookie = cookie.trim();
+                if (cookie.startsWith(name + '=')) {
+                    cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                    break;
+                }
+            }
+        }
+        return cookieValue;
+    }
+
+    // Save record
+    function saveRecord() {
+        const formData = new FormData();
+        
+        // Collect form data
+        formData.append('r_c_no', document.getElementById('r_c_no').value);
+        formData.append('date', document.getElementById('date').value);
+        formData.append('payin', document.getElementById('payin').value);
+        formData.append('room_no_1', document.getElementById('room_no_1').value);
+        formData.append('room_no_2', document.getElementById('room_no_2').value);
+        formData.append('member_1', document.getElementById('member_1').value);
+        formData.append('member_2', document.getElementById('member_2').value);
+
+
+        // Radio button: 'type'
+        let typeValue = '';
+        document.getElementsByName('type').forEach(el => {
+            if (el.checked) typeValue = el.value;
+        });
+        formData.append('type', typeValue);
+
+        // Radio button: 'payment_method'
+        let paymentMethodValue = '';
+        document.getElementsByName('payment_method').forEach(el => {
+            if (el.checked) paymentMethodValue = el.value;
+        });
+        formData.append('payment_method', paymentMethodValue);
+
+        // formData.append('type', document.getElementsByName('type').value);
+        // formData.append('payment_method', document.getElementsByName('payment_method').value);
+        formData.append('bank_1', document.getElementById('bank_1').value);
+        formData.append('bank_2', document.getElementById('bank_2').value);
+        formData.append('bank_no', document.getElementById('bank_no').value);
+        formData.append('bank_date', document.getElementById('bank_date').value);
+        formData.append('vat', document.getElementById('vat').checked);
+
+        formData.append('deduct_from_prepaid', document.getElementById('deduct_from_prepaid').checked);
+        formData.append('withdraw_from_bankaccount', document.getElementById('withdraw_from_bankaccount').checked);
+        formData.append('withdraw', document.getElementById('withdraw').value);
+        formData.append('total', document.getElementById('total').value);
+        formData.append('tax_no', document.getElementById('tax_no').value);
+        formData.append('tax_date', document.getElementById('tax_date').value);
+        formData.append('no_ref', document.getElementById('no_ref').value);
+        formData.append('remark_1', document.getElementById('remark_1').value);
+        formData.append('remark_2', document.getElementById('remark_2').value);
+
+        // Validate required fields
+        if (!formData.get('r_c_no') || !formData.get('date') || !formData.get('member_1')) {
+            showMessage('กรุณากรอกข้อมูลที่จำเป็นให้ครบถ้วน', 'error');
+            return;
+        }
+
+        showLoading();
+        
+        fetch('/m35/', {  // เปลี่ยน URL ให้ตรงกับ path ของ view m35 ใน urls.py
+        method: 'POST',
+        headers: {
+            'X-CSRFToken': getCookie('csrftoken'), // ใส่ CSRF token ให้ Django เช็ค
+        },
+        body: formData
+        })
+        .then(response => {
+            hideLoading();
+            if (!response.ok) throw new Error('เกิดข้อผิดพลาดจาก server');
+            return response.json();
+        })
+        .then(data => {
+            if (data.status === 'success' || data.message.includes('เพิ่มเรียบร้อยแล้ว')) {
+                showMessage(data.message || 'บันทึกข้อมูลเรียบร้อยแล้ว', 'success');
+                setFormMode('view');
+            } else {
+                showMessage(data.message || 'เกิดข้อผิดพลาดในการบันทึกข้อมูล', 'error');
+            }
+        })
+        .catch(error => {
+            hideLoading();
+            showMessage(error.message || 'เกิดข้อผิดพลาดในการติดต่อ server', 'error');
+        });
+        // Simulate save (replace with actual AJAX call)
+        // setTimeout(() => {
+        //     hideLoading();
+        //     showMessage(currentRecordId ? 'แก้ไขข้อมูลเรียบร้อยแล้ว' : 'บันทึกข้อมูลเรียบร้อยแล้ว', 'success');
+            
+        //     if (!currentRecordId) {
+        //         // Refresh page for new record
+        //         setTimeout(() => {
+        //             window.location.reload();
+        //         }, 1000);
+        //     } else {
+        //         setFormMode('view');
+        //     }
+        // }, 1000);
     }
 
 
