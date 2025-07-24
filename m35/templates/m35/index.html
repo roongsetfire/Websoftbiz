@@ -139,11 +139,24 @@
                     <span class="w-6 h-5 gradient-gray border border-gray-600 flex items-center justify-center text-black opacity-50 cursor-not-allowed">&gt;</span>
                     <span class="w-6 h-5 gradient-gray border border-gray-600 flex items-center justify-center text-black opacity-50 cursor-not-allowed">&gt;|</span>
                 {% endif %}
-                <div class="hotkey-hint">
+                <div class="hotkey-hint flex items-center text-sm text-gray-600 ml-2">
                     <div class="ml-2 text-gray-600">
                         หน้า 1 / 3 (1-3 จาก 25) | 
-                        
                     </div>
+                    <button type="button" class="w-16 gradient-gray border border-gray-600 py-0.5 cursor-pointer hover:bg-gray-300 ml-2 rounded text-green-600" 
+                     onclick="">F2 เพิ่ม</button>
+                     <button type="button" class="w-16 gradient-gray border border-gray-600 py-0.5 cursor-pointer hover:bg-gray-300 ml-2 rounded text-orange-600" 
+                     onclick="">F2 บันทึก</button>
+                    <button type="button" class="w-16 gradient-gray border border-gray-600 py-0.5 cursor-pointer hover:bg-gray-300 ml-2 rounded text-blue-900" 
+                     onclick="">F3 แก้ไข</button>
+                     <button type="button" class="w-16 gradient-gray border border-gray-600 py-0.5 cursor-pointer hover:bg-gray-300 ml-2 rounded text-red-600" 
+                     onclick="">F4 ลบ</button>
+                    <button type="button" class="w-16 gradient-gray border border-gray-600 py-0.5 cursor-pointer hover:bg-gray-300 ml-2 rounded text-purple-600" 
+                     onclick="">F5 ค้นหา</button>
+                     <button type="button" class="w-16 gradient-gray border border-gray-600 py-0.5 cursor-pointer hover:bg-gray-300 ml-2 rounded text-blue-600" 
+                     onclick="">F6 พิมพ์</button>
+                    <button type="button" class="w-16 gradient-gray border border-gray-600 py-0.5 cursor-pointer hover:bg-gray-300 ml-2 rounded text-yellow-500" 
+                     onclick="">ESC ออก</button>
                 </div>
             </div>
             
@@ -164,15 +177,15 @@
                     
                         <div class="flex items-center gap-1">
                             <label class="flex-shrink-0 ml-6 mr-4">วันที่</label>
-                            <input type="date" name="date" class="w-28 px-1 py-0.5 border border-gray-600 bg-gray-50 focus:outline-none focus:ring-1 focus:ring-blue-500" id="date">
+                            <input type="date" name="date" class="w-32 px-1 py-0.5 border border-gray-600 bg-gray-50 focus:outline-none focus:ring-1 focus:ring-blue-500" id="date">
 
                         </div>
 
                         <div class="flex items-center gap-1">
                             <label class="flex-shrink-0 ml-6 mr-4">ฝาก</label>
-                            <input type="date" name="date1" class="w-28 px-1 py-0.5 border border-gray-600 bg-gray-50 focus:outline-none focus:ring-1 focus:ring-blue-500" id="date1">
+                            <input type="date" name="payin" class="w-32 px-1 py-0.5 border border-gray-600 bg-gray-50 focus:outline-none focus:ring-1 focus:ring-blue-500" id="payin">
 
-                            <button type="button" class="w-24 gradient-gray border border-gray-600 py-0.5 cursor-pointer hover:bg-gray-300 ml-16" onclick="printReport()">REPORT</button>
+                            <!-- <button type="button" class="w-24 gradient-gray border border-gray-600 py-0.5 cursor-pointer hover:bg-gray-300 ml-16" onclick="printReport()">REPORT</button> -->
                         </div>
                         
                     </div>
@@ -181,8 +194,8 @@
                        
                             <div class="flex items-center gap-1">
                                 <label class="w-28 flex-shrink-0 px-4">เลขที่ห้อง</label>
-                                <input type="text" name="room_no1" class="w-24 px-1 py-0.5 border border-gray-600 bg-gray-50 focus:outline-none focus:ring-1 focus:ring-blue-500" id="room_no1">
-                                <input type="text" name="room_no2" class="w-72 px-1 py-0.5 border border-gray-600 bg-gray-50 focus:outline-none focus:ring-1 focus:ring-blue-500" id="room_no2">
+                                <input type="text" name="room_no1" class="w-24 px-1 py-0.5 border border-gray-600 bg-gray-50 focus:outline-none focus:ring-1 focus:ring-blue-500" id="room_no_1">
+                                <input type="text" name="room_no2" class="w-72 px-1 py-0.5 border border-gray-600 bg-gray-50 focus:outline-none focus:ring-1 focus:ring-blue-500" id="room_no_2">
                             </div>
                         
                     </div>
@@ -214,7 +227,7 @@
                             <input type="radio" id="option3" name="payment" value="รายรับอื่นๆ" class="accent-blue-600 ml-5">
                             <label for="option3">รายรับอื่นๆ</label> -->
 
-                            <button type="button" class="w-24 gradient-gray border border-gray-600 py-0.5 cursor-pointer hover:bg-gray-300 ml-10" data-modal-toggle="unpaidModal" data-modal-target="unpaidModal" onclick="getRadio1()">บิลค้างชำระ</button>
+                            <button type="button" class="w-24 gradient-gray border border-gray-600 py-0.5 cursor-pointer hover:bg-gray-300 ml-10 rounded" data-modal-toggle="unpaidModal" data-modal-target="unpaidModal" onclick="getRadio1()">บิลค้างชำระ</button>
                             
 
                         </div>
@@ -273,8 +286,8 @@
                             <div class="flex items-center gap-2">
                                 <label class="w-16">ชำระโดย</label>
                                 {% for value,label in payment_choices %}
-                                <input type="radio" id="payment_{{ forloop.counter }}" name="payment" value="{{value}}" class="accent-blue-600">
-                                <label class="mr-3" for="payment_{{ forloop.counter }}">{{label}}</label>
+                                <input type="radio" id="payment_method_{{ forloop.counter }}" name="payment_method" value="{{value}}" class="accent-blue-600">
+                                <label class="mr-3" for="payment_method_{{ forloop.counter }}">{{label}}</label>
                                 {% endfor %}
                                 <!-- <input type="radio" name="pay_type" value="cash"> เงินสด
                                 <input type="radio" name="pay_type" value="cheque" class="ml-2"> เช็ค
@@ -284,55 +297,55 @@
 
                             <div class="flex items-center gap-2">
                                 <label class="w-16">ธนาคาร</label>
-                                <input type="text" name="bank_name" class="w-12 px-1 py-0.5 border border-gray-600 bg-gray-50">
+                                <input type="text" name="bank_1" id="bank_1" class="w-12 px-1 py-0.5 border border-gray-600 bg-gray-50">
                                 <label class="">/</label>
-                                <input type="text" name="bank_name2" class="w-16 px-1 py-0.5 border border-gray-600 bg-gray-50">
+                                <input type="text" name="bank_2" id="bank_2" class="w-16 px-1 py-0.5 border border-gray-600 bg-gray-50">
                                 <label class="ml-2 whitespace-nowrap">เลขที่</label>
-                                <input type="text" name="cheque_no" class="w-16 px-1 py-0.5 border border-gray-600 bg-gray-50">
+                                <input type="text" name="bank_no" id="bank_no" class="w-16 px-1 py-0.5 border border-gray-600 bg-gray-50">
                                 <label class="ml-2 whitespace-nowrap">วันที่</label>
-                                <input type="date" name="cheque_date" class="px-1 py-0.5 border border-gray-600 bg-gray-50">
+                                <input type="date" name="bank_date" id="bank_date" class="px-1 py-0.5 border border-gray-600 bg-gray-50">
                             </div>
 
                             <div class="flex items-center gap-2 ml-16 px-2">
-                                <input type="checkbox" name="deduct_advance" id="deduct_advance">
-                                <label for="deduct_advance">ลดหนี้จากชำระล่วงหน้า</label>
+                                <input type="checkbox" name="deduct_from_prepaid" id="deduct_from_prepaid">
+                                <label for="deduct_from_prepaid">ลดหนี้จากชำระล่วงหน้า</label>
 
                             </div>
 
                             <div class="flex items-center gap-2 ml-12">
 
-                                <input type="checkbox" name="deduct" id="deduct" class="ml-6">
-                                <label for="deduct">ตัดบัญชีเงินฝากส่วนตัว</label>
-                                <input type="text" name="deduct" class="w-24 px-1 py-0.5 border border-gray-600 bg-gray-50">
+                                <input type="checkbox" name="withdraw_from_bankaccount" id="withdraw_from_bankaccount" class="ml-6">
+                                <label for="withdraw_from_bankaccount">ตัดบัญชีเงินฝากส่วนตัว</label>
+                                <input type="text" name="withdraw" id="withdraw" class="w-24 px-1 py-0.5 border border-gray-600 bg-gray-50">
                             </div>
 
                             <div class="flex items-center gap-2 ml-4">
                                 <label class="ml-32">ยอดชำระสุทธิ</label>
-                                <input type="text" name="net_payment" class="w-24 px-1 py-0.5 border border-gray-600 bg-gray-50">
+                                <input type="text" name="total" id="total" class="w-24 px-1 py-0.5 border border-gray-600 bg-gray-50">
                             </div>
 
                             <div class="flex items-center gap-2">
                                 <label class="w-48">เลขที่หนังสือรับรองการหักภาษี</label>
-                                <input type="text" name="tax_cert_no" class="w-32 px-1 py-0.5 border border-gray-600 bg-gray-50">  
+                                <input type="text" name="tax_no" id="tax_no" class="w-32 px-1 py-0.5 border border-gray-600 bg-gray-50">  
                             </div>
 
                             <div class="flex items-center gap-2 ml-32 px-1">
                                 <label>ลงวันที่</label>
-                                <input type="date" name="tax_cert_date" class="w-32 px-1 py-0.5 border border-gray-600 bg-gray-50 ml-5">
+                                <input type="date" name="tax_date" id="tax_date" class="w-32 px-1 py-0.5 border border-gray-600 bg-gray-50 ml-5">
                             </div>
 
                             <div class="flex items-center gap-2">
                                 <label class="w-24">เลขที่อ้างอิง</label>
-                                <input type="text" name="ref_no" class="w-64 px-1 py-0.5 border border-gray-600 bg-gray-50">
+                                <input type="text" name="no_ref" id="no_ref" class="w-64 px-1 py-0.5 border border-gray-600 bg-gray-50">
                             </div>
 
                             <div class="flex items-center gap-2">
                                 <label class="w-24">หมายเหตุ</label>
-                                <input type="text" name="remark" class="w-96 px-1 py-0.5 border border-gray-600 bg-gray-50">
+                                <input type="text" name="remark_1" id="remark_1" class="w-96 px-1 py-0.5 border border-gray-600 bg-gray-50">
                             </div>
 
                             <div class="flex items-center gap-2 ml-20 px-1">
-                                <input type="text" name="remark" class="w-96 px-1 py-0.5 border border-gray-600 bg-gray-50 ml-5 -mt-0.5">
+                                <input type="text" name="remark_2" id="remark_2" class="w-96 px-1 py-0.5 border border-gray-600 bg-gray-50 ml-5 -mt-0.5">
                             </div>
 
                         </div>
@@ -356,6 +369,7 @@
                             </div>
                             <div class="block my-0.5">
                                 <label for="cb5">ภาษีหัก ณ ที่จ่าย</label>
+                                <input type="checkbox" name="vat" id="vat">
                                 <input type="text" name="paid_amount" id="cb5" class="ml-1 w-24 px-1 py-0.5 border border-gray-600 bg-gray-50 focus:outline-none focus:ring-1 focus:ring-blue-500">
                             </div>
                             <div class="block my-0.5">
@@ -441,11 +455,11 @@
         window.print();
     }
 
-    // บิลค้างชำระ
-    function getRadio1() {
-        const selected = document.querySelector('input[name="type"]:checked');
-        alert("คุณเลือก: " + (selected ? selected.value : "ยังไม่ได้เลือก"));
-    }
+    // // บิลค้างชำระ
+    // function getRadio1() {
+    //     const selected = document.querySelector('input[name="type"]:checked');
+    //     alert("คุณเลือก: " + (selected ? selected.value : "ยังไม่ได้เลือก"));
+    // }
 
     // Select record in table
     function selectRecord(row, recordId) {
@@ -482,20 +496,51 @@
 
         // Fill form with record data from table
         document.getElementById('r_c_no').value = click_id.r_c_no;
-        // document.getElementById('date').value = formatDateForInput(cells[1].textContent);
-        // document.getElementById('month').value = cells[0].textContent;
-        // document.getElementById('year').value = new Date().getFullYear(); // Default current year
-        // document.getElementById('prd').value = cells[3].textContent;
+        document.getElementById('date').value = click_id.date;
+        document.getElementById('payin').value = click_id.payin;
+        document.getElementById('room_no_1').value = click_id.room_no_1; 
+        document.getElementById('room_no_2').value = click_id.room_no_2;
+        document.getElementById('member_1').value = click_id.member_1; 
+        document.getElementById('member_2').value = click_id.member_2;
         
-        // // Customer names
-        // const customerCell = cells[4];
-        // const customerText = customerCell.textContent.trim();
-        // const customerLines = customerText.split('\n');
-        // document.getElementById('member_1').value = customerLines[0] || '';
-        // document.getElementById('member_2').value = customerLines[1] || '';
+
+        const typeRadios = document.getElementsByName('type');
         
-        // document.getElementById('remark_1').value = cells[5].textContent === '-' ? '' : cells[5].textContent;
-        // document.getElementById('textstamp').value = cells[6].textContent;
+        for (let i = 0; i < typeRadios.length; i++) {
+            console.log('radio',typeRadios[i]);
+            if (typeRadios[i].value === click_id.type) {
+                typeRadios[i].checked = true;
+                break;
+            }
+        }
+
+        const typeRadios2 = document.getElementsByName('payment_method');
+        
+        for (let i = 0; i < typeRadios2.length; i++) {
+            console.log('radio',typeRadios2[i]);
+            if (typeRadios2[i].value === click_id.payment_method) {
+                typeRadios2[i].checked = true;
+                break;
+            }
+        }
+        
+        document.getElementById('bank_1').value = click_id.bank_1; 
+        document.getElementById('bank_2').value = click_id.bank_2;
+        document.getElementById('bank_no').value = click_id.bank_no; 
+        document.getElementById('bank_date').value = click_id.bank_date;
+        document.getElementById('vat').checked = click_id.vat;
+        document.getElementById('deduct_from_prepaid').checked = click_id.deduct_from_prepaid; 
+        document.getElementById('withdraw_from_bankaccount').checked = click_id.withdraw_from_bankaccount;
+        document.getElementById('withdraw').value = click_id.withdraw;
+        document.getElementById('total').value = click_id.total;
+        document.getElementById('tax_no').value = click_id.tax_no;
+        document.getElementById('tax_date').value = click_id.tax_date;
+
+        document.getElementById('no_ref').value = click_id.no_ref;
+        document.getElementById('remark_1').value = click_id.remark_1;
+        document.getElementById('remark_2').value = click_id.remark_2;
+
+        
         
         // currentRecordId = recordId;
         // setFormMode('view');

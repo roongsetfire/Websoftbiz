@@ -31,6 +31,6 @@ def m35(request):
         
     }
     print(list(CmtRctr.objects.values()))
-    print('check',context['data_json'])
+    # print('check',context['data_json'])
     return render(request,'m35/index.html',context)
 
