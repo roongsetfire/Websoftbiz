@@ -120,13 +120,19 @@ class CmtArtr(models.Model):
 
 
 class CmtArtrItem(models.Model):
-    bill = models.ForeignKey(
-        CmtArtr,
-        on_delete=models.CASCADE,
-        related_name="bill_items",
-        verbose_name="ใบแจ้งหนี้",
-    )
+    # bill = models.ForeignKey(
+    #     CmtArtr,
+    #     on_delete=models.CASCADE,
+    #     related_name="bill_items",
+    #     verbose_name="เลขที่บิลล์",
+    # )
     row_number = models.PositiveIntegerField(verbose_name="หมายเลขแถว")
+    m_y_prd = models.CharField(
+        max_length=20, default='-', verbose_name="เดือน/ปี/งวด"
+    )
+    bill_no = models.CharField(
+        max_length=20, default='-', verbose_name="เลขที่บิลล์"
+    )
     item_code = models.CharField(
         max_length=50, blank=True, null=True, verbose_name="รหัส"
     )
@@ -150,7 +156,7 @@ class CmtArtrItem(models.Model):
         verbose_name = "รายการใบแจ้งหนี้"
         verbose_name_plural = "รายการใบแจ้งหนี้ทั้งหมด"
         ordering = ["row_number"]
-        unique_together = [["bill", "row_number"]]
+        unique_together = [["row_number"]]
 
     def save(self, *args, **kwargs):
         # คำนวณยอดเงินอัตโนมัติ
@@ -158,4 +164,4 @@ class CmtArtrItem(models.Model):
         super().save(*args, **kwargs)
 
     def __str__(self):
-        return f"{self.bill.bill_no} - แถว {self.row_number}"
+        return f"{self.bill_no} - แถว {self.row_number}"

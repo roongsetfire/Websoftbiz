@@ -3,6 +3,7 @@ from m35.forms import CmtRctrForm
 from django.contrib import messages
 from django.http import HttpResponse
 from .models import CmtRctr
+from expense.models import CmtArtrItem
 import json
 from django.core.serializers.json import DjangoJSONEncoder
 from django.http import JsonResponse
@@ -12,6 +13,8 @@ def m35(request):
 
     data = CmtRctr.objects.all().order_by('id')
     data_value = CmtRctr.objects.all().values().order_by('-id')
+    data_table = CmtArtrItem.objects.all().order_by('id')
+    # data_table = list(data_table)
     data_list = list(data_value)
     if request.method == "POST":
         form = CmtRctrForm(request.POST)
@@ -44,10 +47,12 @@ def m35(request):
         'payment_choices' : CmtRctr.PAYMENT_CHOICES,
         'type_choices' : CmtRctr.TYPE_CHOICES,
         'data' : data,
-        'data_json' : json.dumps(data_list, cls=DjangoJSONEncoder)
+        'data_json' : json.dumps(data_list, cls=DjangoJSONEncoder),
+        'data_table' : data_table,
         
     }
-    print(list(CmtRctr.objects.values()))
+    # print(list(CmtRctr.objects.values()))
     # print('check',context['data_json'])
+    print(list(CmtArtrItem.objects.values()))
     return render(request,'m35/index.html',context)
 

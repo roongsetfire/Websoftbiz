@@ -422,17 +422,17 @@
                             </tr>
                         </thead>
                         <tbody class="bg-white">
-                            {% for bill in unpaid_list %}
+                            {% for col in data_table %}
                             <tr onclick=""
                              class="cursor-pointer hover:bg-blue-100 even:bg-gray-50 border-b border-gray-200">
-                                <td class="px-2 py-1 border border-gray-300">{{ bill }}</td>
-                                <td class="px-2 py-1 border border-gray-300">{{ bill}}</td>
-                                <td class="px-2 py-1 border border-gray-300">{{ bill }}</td>
-                                <td class="px-2 py-1 border border-gray-300">{{ bill}}</td>
-                                <td class="px-2 py-1 border border-gray-300">{{ bill }}</td>
-                                <td class="px-2 py-1 border border-gray-300">{{ bill}}</td>
-                                <td class="px-2 py-1 border border-gray-300">{{ bill }}</td>
-                                <td class="px-2 py-1 border border-gray-300">{{ bill }}</td>
+                                <td class="px-2 py-1 border border-gray-300">{{ col.m_y_prd }}</td>
+                                <td class="px-2 py-1 border border-gray-300">{{ col.bill_no }}</td>
+                                <td class="px-2 py-1 border border-gray-300">{{ col.item_code }}</td>
+                                <td class="px-2 py-1 border border-gray-300">{{ col.description }}</td>
+                                <td class="px-2 py-1 border border-gray-300">{{ col.amount }}</td>
+                                <td class="px-2 py-1 border border-gray-300">-</td>
+                                <td class="px-2 py-1 border border-gray-300">-</td>
+                                <td class="px-2 py-1 border border-gray-300">-</td>
                             </tr>
                             {% empty %}
                             <tr><td colspan="8" class="text-center py-4 text-gray-500">ไม่พบรายการค้างชำระ</td></tr>
