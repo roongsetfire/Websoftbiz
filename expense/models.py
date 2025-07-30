@@ -127,6 +127,9 @@ class CmtArtrItem(models.Model):
     #     verbose_name="เลขที่บิลล์",
     # )
     row_number = models.PositiveIntegerField(verbose_name="หมายเลขแถว")
+    room_no = models.CharField(
+        max_length=10, default='-', verbose_name="หมายเลขห้อง"
+    )
     m_y_prd = models.CharField(
         max_length=20, default='-', verbose_name="เดือน/ปี/งวด"
     )

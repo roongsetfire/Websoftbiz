@@ -39,4 +39,4 @@ admin.site.index_title = "จัดการระบบใบเสร็จ"
 
 @admin.register(CmtArtrItem)
 class CmtArtrItemAdmin(admin.ModelAdmin):
-    list_display = ['m_y_prd',"bill_no", "row_number", "item_code", "description", "rate", "quantity", "amount"]
+    list_display = ['room_no','m_y_prd',"bill_no", "row_number", "item_code", "description", "rate", "quantity", "amount"]

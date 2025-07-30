@@ -13,8 +13,8 @@ def m35(request):
 
     data = CmtRctr.objects.all().order_by('id')
     data_value = CmtRctr.objects.all().values().order_by('-id')
-    data_table = CmtArtrItem.objects.all().order_by('id')
-    # data_table = list(data_table)
+    data_table = CmtArtrItem.objects.all().values().order_by('id')
+    data_table_json = list(data_table)
     data_list = list(data_value)
     if request.method == "POST":
         form = CmtRctrForm(request.POST)
@@ -49,6 +49,7 @@ def m35(request):
         'data' : data,
         'data_json' : json.dumps(data_list, cls=DjangoJSONEncoder),
         'data_table' : data_table,
+        'data_table_json' : json.dumps(data_table_json, cls=DjangoJSONEncoder)
         
     }
     # print(list(CmtRctr.objects.values()))

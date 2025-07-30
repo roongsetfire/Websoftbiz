@@ -56,6 +56,16 @@
             counter-increment: rowNumber;
             content: counter(rowNumber) ".";
         }
+
+        /* ใช้เฉพาะตารางที่มี id="dataTable" */
+        #dataTable1 {
+            counter-reset: rowNumber;
+        }
+
+        #dataTable1 .row-number::before {
+            counter-increment: rowNumber;
+            content: counter(rowNumber) ".";
+        }
     </style>
 
     <!-- Loading Indicator -->
@@ -227,7 +237,7 @@
                             <input type="radio" id="option3" name="payment" value="รายรับอื่นๆ" class="accent-blue-600 ml-5">
                             <label for="option3">รายรับอื่นๆ</label> -->
 
-                            <button type="button" class="w-24 gradient-gray border border-gray-600 py-0.5 cursor-pointer hover:bg-gray-300 ml-10 rounded" data-modal-toggle="unpaidModal" data-modal-target="unpaidModal" onclick="getRadio1()">บิลค้างชำระ</button>
+                            <button type="button" class="w-24 gradient-gray border border-gray-600 py-0.5 cursor-pointer hover:bg-gray-300 ml-10 rounded" data-modal-toggle="unpaidModal" data-modal-target="unpaidModal" onclick="getModal()">บิลค้างชำระ</button>
                             
 
                         </div>
@@ -252,7 +262,7 @@
                                     <th class="gradient-light-gray border border-gray-600 px-2 py-1 font-bold sticky top-0 z-10 w-14">เป็นเงิน</th>
                                 </tr>
                             </thead>
-                            <tbody id="dataTable">
+                            <tbody id="dataTable1">
                                
                                 {% for i in row_numbers %}
                                 <tr onclick="" 
@@ -421,8 +431,8 @@
                                 <th class="px-2 py-1 border border-gray-300">ยอดชำระ</th>
                             </tr>
                         </thead>
-                        <tbody class="bg-white">
-                            {% for col in data_table %}
+                        <tbody class="bg-white" id="dataTableBody">
+                            <!-- {% for col in data_table %}
                             <tr onclick=""
                              class="cursor-pointer hover:bg-blue-100 even:bg-gray-50 border-b border-gray-200">
                                 <td class="px-2 py-1 border border-gray-300">{{ col.m_y_prd }}</td>
@@ -436,7 +446,7 @@
                             </tr>
                             {% empty %}
                             <tr><td colspan="8" class="text-center py-4 text-gray-500">ไม่พบรายการค้างชำระ</td></tr>
-                            {% endfor %}
+                            {% endfor %} -->
                         </tbody>
                     </table>
                 </div>
@@ -449,6 +459,7 @@
     let currentRecordId = null;
     let formMode = 'view';
     let selectedRow = null;
+    let selectedRows = [];
 
     // Print report
     function printReport() {
@@ -465,11 +476,75 @@
         document.getElementById('loading').classList.add('hidden');
     }
 
-    // // บิลค้างชำระ
-    // function getRadio1() {
-    //     const selected = document.querySelector('input[name="type"]:checked');
-    //     alert("คุณเลือก: " + (selected ? selected.value : "ยังไม่ได้เลือก"));
-    // }
+    // บิลค้างชำระ
+    function getModal() {
+        const data_table1 = JSON.parse(`{{ data_table_json|safe|escapejs }}`);
+        const room_no1 = document.getElementById("room_no_1").value;
+        const selected_modal = [];
+
+        data_table1.forEach(item => {
+            if (item.room_no == room_no1) {
+                selected_modal.push(item);
+                
+            }
+        });
+        console.log(selected_modal);
+
+        const tbody = document.getElementById("dataTableBody");
+        tbody.innerHTML = '';
+
+        // ตัวแปรเก็บข้อมูลแถวที่เลือก
+        // const selectedRows = [];
+
+        selected_modal.forEach(col => {
+            const tr = document.createElement("tr");
+            tr.className = "cursor-pointer hover:bg-blue-100 even:bg-gray-50 border-b border-gray-200";
+
+            // สร้าง property id เพื่อเช็คใน selectedRows ง่ายขึ้น
+            const rowKey = `${col.bill_no}_${col.item_code}_${col.m_y_prd}`;
+            tr.dataset.rowKey = rowKey;
+
+            // เพิ่ม onclick event (ตัวอย่าง alert แสดงเลขบิล)
+            tr.onclick = function() {
+                const key = this.dataset.rowKey;
+                const index = selectedRows.findIndex(row => (
+                    `${row.bill_no}_${row.item_code}_${row.m_y_prd}` === key
+                ));
+
+                if (index === -1) {
+                    // ยังไม่อยู่ในรายการ → เพิ่ม
+                    this.classList.add("!bg-blue-300");
+                    selectedRows.push(col);
+                } else {
+                    // อยู่แล้ว → ลบ
+                    this.classList.remove("!bg-blue-300");
+                    selectedRows.splice(index, 1);
+                }
+
+                console.log("selectedRows", selectedRows);
+            };
+            
+            tr.innerHTML = `
+                <td class="px-2 py-1 border border-gray-300">${col.m_y_prd}</td>
+                <td class="px-2 py-1 border border-gray-300">${col.bill_no}</td>
+                <td class="px-2 py-1 border border-gray-300">${col.item_code}</td>
+                <td class="px-2 py-1 border border-gray-300">${col.description}</td>
+                <td class="px-2 py-1 border border-gray-300">${col.amount}</td>
+                <td class="px-2 py-1 border border-gray-300">-</td>
+                <td class="px-2 py-1 border border-gray-300">-</td>
+                <td class="px-2 py-1 border border-gray-300">-</td>
+            `;
+            tbody.appendChild(tr);
+        });
+
+        if (selected_modal.length == 0) {
+            tbody.innerHTML = `
+                <tr>
+                    <td colspan="8" class="text-center py-4 text-gray-500">ไม่พบรายการค้างชำระ</td>
+                </tr>
+            `;
+        }
+    }
 
     // Set form mode
     function setFormMode(mode) {
@@ -840,6 +915,17 @@
             if (formMode === 'edit' || formMode === 'new') {
                 cancelEdit();
             }
+        }
+        else if (e.key === 'F10') {
+            e.preventDefault();
+
+            
+             
+
+
+            // เช็คค่า selectedRows ยังอยู่ไหม
+            console.log("F10: ปิด modal");
+            console.log("selectedRows:", selectedRows);
         }
     });
 
