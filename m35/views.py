@@ -42,7 +42,7 @@ def m35(request):
     # print('form',form)
 
     context = {
-        'row_numbers': range(1, 10),  # 1 ถึง 15
+        'row_numbers': range(1, 10),  # 1 ถึง 10
         'unpaid_list' : [1,2,3,4,5,6,7,8],
         'payment_choices' : CmtRctr.PAYMENT_CHOICES,
         'type_choices' : CmtRctr.TYPE_CHOICES,

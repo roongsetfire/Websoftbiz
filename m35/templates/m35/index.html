@@ -155,8 +155,8 @@
                     </div>
                     <button type="button" class="w-16 gradient-gray border border-gray-600 py-0.5 cursor-pointer hover:bg-gray-300 ml-2 rounded text-green-600" 
                      onclick="new_Record()">F2 เพิ่ม</button>
-                    <button type="button" class="w-16 gradient-gray border border-gray-600 py-0.5 cursor-pointer hover:bg-gray-300 ml-2 rounded text-orange-600" 
-                     onclick="saveRecord()">F2 บันทึก</button>
+                    <button type="button" class="w-20 gradient-gray border border-gray-600 py-0.5 cursor-pointer hover:bg-gray-300 ml-2 rounded text-orange-600" 
+                     onclick="saveRecord()">F10 บันทึก</button>
                     <button type="button" class="w-16 gradient-gray border border-gray-600 py-0.5 cursor-pointer hover:bg-gray-300 ml-2 rounded text-blue-900" 
                      onclick="editRecord()">F3 แก้ไข</button>
                      <button type="button" class="w-16 gradient-gray border border-gray-600 py-0.5 cursor-pointer hover:bg-gray-300 ml-2 rounded text-red-600" 
@@ -237,7 +237,7 @@
                             <input type="radio" id="option3" name="payment" value="รายรับอื่นๆ" class="accent-blue-600 ml-5">
                             <label for="option3">รายรับอื่นๆ</label> -->
 
-                            <button type="button" class="w-24 gradient-gray border border-gray-600 py-0.5 cursor-pointer hover:bg-gray-300 ml-10 rounded" data-modal-toggle="unpaidModal" data-modal-target="unpaidModal" onclick="getModal()">บิลค้างชำระ</button>
+                            <button id="btnUnpaid" type="button" class="w-24 gradient-gray border border-gray-600 py-0.5 cursor-pointer hover:bg-gray-300 ml-10 rounded" data-modal-toggle="unpaidModal" data-modal-target="unpaidModal" onclick="getModal()">บิลค้างชำระ</button>
                             
 
                         </div>
@@ -555,6 +555,8 @@
             '#formSection input[type="checkbox"]'
         );
         
+        const btnUnpaid = document.getElementById('btnUnpaid');
+
         if (mode === 'view') {
             inputs.forEach(input => {
                 input.disabled = true;
@@ -564,6 +566,13 @@
                 }
                 
             });
+
+            // ปิดการใช้งานปุ่ม บิลค้างชำระ
+            if (btnUnpaid) {
+                btnUnpaid.disabled = true;
+                btnUnpaid.classList.add("opacity-50", "cursor-not-allowed");
+            }
+
         } else if (mode === 'edit' || mode === 'new') {
             inputs.forEach(input => {
                 input.disabled = false;
@@ -571,6 +580,12 @@
                     input.style.backgroundColor = '#ffffff';  // เทาอ่อน vs ขาว
                 }
             });
+
+            // เปิดใช้งานปุ่ม บิลค้างชำระ
+            if (btnUnpaid) {
+                btnUnpaid.disabled = false;
+                btnUnpaid.classList.remove("opacity-50", "cursor-not-allowed");
+            }
         }
     }
 
@@ -711,6 +726,18 @@
         currentRecordId = recordId;
         console.log(currentRecordId)
         setFormMode('view');
+
+        // ✅ เคลียร์ dataTable1 ทุกครั้งที่เลือกใบเสร็จใหม่
+        const rows = document.querySelectorAll("#dataTable1 tr");
+        rows.forEach(tr => {
+            const cols = tr.querySelectorAll("td");
+            for (let i = 1; i < cols.length; i++) {
+                cols[i].textContent = "";
+            }
+        });
+
+        // ✅ reset ตัวแปร selectedRows ด้วย
+        selectedRows = [];
     }
 
     function getCookie(name) {
@@ -801,6 +828,7 @@
         })
         .then(data => {
             if (data.status === 'success' || data.message.includes('เพิ่มเรียบร้อยแล้ว')) {
+                
                 showMessage(data.message || 'บันทึกข้อมูลเรียบร้อยแล้ว', 'success');
                 setFormMode('view');
 
@@ -919,13 +947,38 @@
         else if (e.key === 'F10') {
             e.preventDefault();
 
-            
+            // หา element ปุ่มปิด (กากบาท)
+            const closeBtn = document.querySelector('#unpaidModal [data-modal-hide="unpaidModal"]');
+            if (closeBtn) {
+                closeBtn.click();   // ให้คลิกปุ่มนี้แทน
+            }
              
-
-
             // เช็คค่า selectedRows ยังอยู่ไหม
             console.log("F10: ปิด modal");
             console.log("selectedRows:", selectedRows);
+
+            // ดึงทุกแถวใน dataTable1
+            const rows = document.querySelectorAll("#dataTable1 tr");
+
+            rows.forEach((tr, index) => {
+                const cols = tr.querySelectorAll("td");
+
+                if (index < selectedRows.length) {
+                    const row = selectedRows[index];
+                    cols[1].textContent = row.item_code;     // รหัส
+                    cols[2].textContent = row.description;   // รายการ
+                    cols[3].textContent = row.rate;        // อัตรา (เอา amount ไปแทน)
+                    cols[4].textContent = row.quantity;                 // จำนวน (fix = 1)
+                    cols[5].textContent = row.amount;        // เป็นเงิน
+                } else {
+                    // ถ้าไม่มีข้อมูล → ล้างค่าให้ว่าง
+                    for (let i = 1; i < cols.length; i++) {
+                        cols[i].textContent = "";
+                    }
+                }
+            });
+
+
         }
     });
 

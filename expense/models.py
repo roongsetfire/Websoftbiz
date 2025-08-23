@@ -154,6 +154,10 @@ class CmtArtrItem(models.Model):
 
     created_at = models.DateTimeField(default=timezone.now, verbose_name="เวลาสร้าง")
 
+    textstamp = models.CharField(
+        max_length=50, default='unpaid', verbose_name="ตรวจสอบการชำระบิล"
+    )
+
     class Meta:
         db_table = "CMT_ARTR_ITEM"
         verbose_name = "รายการใบแจ้งหนี้"
