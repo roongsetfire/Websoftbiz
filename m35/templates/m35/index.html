@@ -363,36 +363,36 @@
                         <div class="text-right w-full">
                             <div class="block my-0.5">
                                 <label for="cb1">มูลค่าฯไม่คิดภาษี</label>
-                                <input type="text" name="value_n" id="cb1" class="ml-1 w-24 px-1 py-0.5 border border-gray-600 bg-gray-50 focus:outline-none focus:ring-1 focus:ring-blue-500">
+                                <input type="text" name="value_n" id="cb1" class="ml-1 w-24 px-1 py-0.5 border border-gray-600 bg-gray-50 focus:outline-none focus:ring-1 focus:ring-blue-500 text-right">
                             </div>
                             <div class="block my-0.5">
                                 <label for="cb2">มูลค่าฯคิดภาษี</label>
-                                <input type="text" name="value_v" id="cb2" class="ml-1 w-24 px-1 py-0.5 border border-gray-600 bg-gray-50 focus:outline-none focus:ring-1 focus:ring-blue-500">
+                                <input type="text" name="value_v" id="cb2" class="ml-1 w-24 px-1 py-0.5 border border-gray-600 bg-gray-50 focus:outline-none focus:ring-1 focus:ring-blue-500 text-right">
                             </div>
                             <div class="block my-0.5">
                                 <label for="cb3">ภาษีมูลค่าเพิ่ม</label>
-                                <input type="text" name="vat" id="cb3" class="ml-1 w-24 px-1 py-0.5 border border-gray-600 bg-gray-50 focus:outline-none focus:ring-1 focus:ring-blue-500">
+                                <input type="text" name="vat" id="cb3" class="ml-1 w-24 px-1 py-0.5 border border-gray-600 bg-gray-50 focus:outline-none focus:ring-1 focus:ring-blue-500 text-right">
                             </div>
                             <div class="block my-0.5">
                                 <label for="cb4">รวมเงินทั้งสิ้น</label>
-                                <input type="text" name="total_amount" id="cb4" class="ml-1 w-24 px-1 py-0.5 border border-gray-600 bg-gray-50 focus:outline-none focus:ring-1 focus:ring-blue-500">
+                                <input type="text" name="total_amount" id="cb4" class="ml-1 w-24 px-1 py-0.5 border border-gray-600 bg-gray-50 focus:outline-none focus:ring-1 focus:ring-blue-500 text-right">
                             </div>
                             <div class="block my-0.5">
                                 <label for="cb5">ภาษีหัก ณ ที่จ่าย</label>
                                 <input type="checkbox" name="vat" id="vat">
-                                <input type="text" name="paid_amount" id="cb5" class="ml-1 w-24 px-1 py-0.5 border border-gray-600 bg-gray-50 focus:outline-none focus:ring-1 focus:ring-blue-500">
+                                <input type="text" name="paid_amount" id="cb5" class="ml-1 w-24 px-1 py-0.5 border border-gray-600 bg-gray-50 focus:outline-none focus:ring-1 focus:ring-blue-500 text-right">
                             </div>
                             <div class="block my-0.5">
                                 <label for="cb6">จำนวนเงินสุทธิ</label>
-                                <input type="text" name="outstanding_amount" id="cb6" class="ml-1 w-24 px-1 py-0.5 border border-gray-600 bg-gray-50 focus:outline-none focus:ring-1 focus:ring-blue-500">
+                                <input type="text" name="outstanding_amount" id="cb6" class="ml-1 w-24 px-1 py-0.5 border border-gray-600 bg-gray-50 focus:outline-none focus:ring-1 focus:ring-blue-500 text-right">
                             </div>
                             <div class="block my-0.5">
                                 <label for="cb7">รับเงิน F8</label>
-                                <input type="text" name="outstanding_amount" id="cb7" class="ml-1 w-24 px-1 py-0.5 border border-gray-600 bg-gray-50 focus:outline-none focus:ring-1 focus:ring-blue-500">
+                                <input type="text" name="outstanding_amount" id="cb7" class="ml-1 w-24 px-1 py-0.5 border border-gray-600 bg-gray-50 focus:outline-none focus:ring-1 focus:ring-blue-500 text-right">
                             </div>
                             <div class="block my-0.5">
                                 <label for="cb8">เงินทอน</label>
-                                <input type="text" name="outstanding_amount" id="cb8" class="ml-1 w-24 px-1 py-0.5 border border-gray-600 bg-gray-50 focus:outline-none focus:ring-1 focus:ring-blue-500">
+                                <input type="text" name="outstanding_amount" id="cb8" class="ml-1 w-24 px-1 py-0.5 border border-gray-600 bg-gray-50 focus:outline-none focus:ring-1 focus:ring-blue-500 text-right">
                             </div>
                         </div>
                     </div>
@@ -738,6 +738,70 @@
 
         // ✅ reset ตัวแปร selectedRows ด้วย
         selectedRows = [];
+
+        // ✅ ดึงรายการบิลที่ textstamp = r_c_no มาแสดงใน dataTable1
+        fetch(`/m35/?action=get_items&r_c_no=${cell_r_c_no}`)
+        .then(res => res.json())
+        .then(data => {
+            if (data.status === "success") {
+                const rows = document.querySelectorAll("#dataTable1 tr");
+                rows.forEach((tr, index) => {
+                    const cols = tr.querySelectorAll("td");
+                    if (index < data.items.length) {
+                        const item = data.items[index];
+                        cols[1].textContent = item.item_code;
+                        cols[2].textContent = item.description;
+                        cols[3].textContent = item.rate;
+                        cols[4].textContent = item.quantity;
+                        cols[5].textContent = item.amount;
+                    } else {
+                        for (let i = 1; i < cols.length; i++) {
+                            cols[i].textContent = "";
+                        }
+                    }
+                });
+
+                updateVatSummary();
+
+            }
+        });
+    }
+
+    function updateVatSummary() {
+        // ✅ รวมค่าจาก column "เป็นเงิน"
+        let totalAmount = 0;
+        const rows = document.querySelectorAll("#dataTable1 tr");
+
+        rows.forEach(tr => {
+            const cols = tr.querySelectorAll("td");
+            if (cols.length > 5) {
+                const amountText = cols[5].textContent.trim();
+                if (amountText !== "") {
+                    totalAmount += parseFloat(amountText) || 0;
+                }
+            }
+        });
+
+        // ✅ ถ้ามีข้อมูล → คำนวณ VAT
+        if (totalAmount > 0) {
+            const vatRate = 0.07; // 7%
+            const valueVat = totalAmount * vatRate;
+            const vatInclude = totalAmount + valueVat;
+            const nonTaxValue = 0;
+
+            document.getElementById("cb1").value = nonTaxValue.toFixed(2);
+            document.getElementById("cb2").value = totalAmount.toFixed(2);
+            document.getElementById("cb3").value = valueVat.toFixed(2);
+            document.getElementById("cb4").value = vatInclude.toFixed(2);
+            document.getElementById("cb6").value = vatInclude.toFixed(2);
+        } else {
+            // ถ้าไม่มีข้อมูล → เคลียร์ช่อง
+            document.getElementById("cb1").value = "";
+            document.getElementById("cb2").value = "";
+            document.getElementById("cb3").value = "";
+            document.getElementById("cb4").value = "";
+            document.getElementById("cb6").value = "";
+        }
     }
 
     function getCookie(name) {
@@ -812,6 +876,11 @@
             return;
         }
 
+            // ✅ แนบข้อมูลบิล (selectedRows) เพิ่มเข้าไป
+        if (selectedRows.length > 0) {
+            formData.append("bills", JSON.stringify(selectedRows));
+        }
+
         showLoading();
         
         fetch('/m35/', {  // เปลี่ยน URL ให้ตรงกับ path ของ view m35 ใน urls.py
@@ -828,7 +897,7 @@
         })
         .then(data => {
             if (data.status === 'success' || data.message.includes('เพิ่มเรียบร้อยแล้ว')) {
-                
+                // ✅ เมื่อบันทึกใบเสร็จสำเร็จ → update textstamp ของบิล
                 showMessage(data.message || 'บันทึกข้อมูลเรียบร้อยแล้ว', 'success');
                 setFormMode('view');
 
@@ -872,6 +941,38 @@
         // }, 1000);
     }
 
+    // ✅ ฟังก์ชันย่อย: อัปเดต textstamp
+    // function updateTextstamp() {
+    //     if (selectedRows.length === 0) return;
+
+    //     const r_c_no = document.getElementById("r_c_no").value;
+    //     const payload = {
+    //         r_c_no: r_c_no,
+    //         bills: selectedRows.map(row => ({
+    //             bill_no: row.bill_no,
+    //             item_code: row.item_code,
+    //             m_y_prd: row.m_y_prd
+    //         }))
+    //     };
+
+    //     fetch("/update_textstamp/", {
+    //         method: "POST",
+    //         headers: {
+    //             "Content-Type": "application/json",
+    //             "X-CSRFToken": getCookie("csrftoken")
+    //         },
+    //         body: JSON.stringify(payload)
+    //     })
+    //     .then(res => res.json())
+    //     .then(data => {
+    //         if (data.status === "success") {
+    //             console.log("update textstamp success", data.updated);
+    //         } else {
+    //             console.error("update textstamp error", data);
+    //         }
+    //     });
+    // }
+
     // Edit record
     function editRecord() {
         if (currentRecordId) {
@@ -908,6 +1009,19 @@
             clearForm();
             setFormMode('view');
         }, 1000);
+    }
+
+    function cancelEdit() {
+        // กลับเป็น view mode
+        setFormMode('view');
+
+        // ถ้ามี record ที่เลือกอยู่ → โหลดข้อมูลจาก database ใหม่
+        if (currentRecordId) {
+            loadRecordDetails(currentRecordId);
+        } else {
+            // ถ้าไม่มี record ที่เลือก → เคลียร์ฟอร์ม
+            clearForm();
+        }
     }
 
     // Keyboard shortcuts
@@ -948,9 +1062,17 @@
             e.preventDefault();
 
             // หา element ปุ่มปิด (กากบาท)
-            const closeBtn = document.querySelector('#unpaidModal [data-modal-hide="unpaidModal"]');
-            if (closeBtn) {
-                closeBtn.click();   // ให้คลิกปุ่มนี้แทน
+            const modal = document.getElementById("unpaidModal");
+
+            if (modal && !modal.classList.contains("hidden")) {
+                // ✅ modal กำลังแสดง → ปิด modal
+                const closeBtn = modal.querySelector('[data-modal-hide="unpaidModal"]');
+                if (closeBtn) {
+                    closeBtn.click();
+                }
+            } else {
+                // ✅ modal ไม่แสดง → กด F10 ให้ทำงานเหมือนกดบันทึก
+                saveRecord();
             }
              
             // เช็คค่า selectedRows ยังอยู่ไหม
@@ -960,24 +1082,43 @@
             // ดึงทุกแถวใน dataTable1
             const rows = document.querySelectorAll("#dataTable1 tr");
 
-            rows.forEach((tr, index) => {
+            // หาตำแหน่งแถวสุดท้ายที่มีข้อมูลอยู่แล้ว
+            let lastFilledIndex = -1;
+            rows.forEach((tr, i) => {
                 const cols = tr.querySelectorAll("td");
+                if (cols[1].textContent.trim() !== "") {
+                    lastFilledIndex = i;
+                }
+            });
 
-                if (index < selectedRows.length) {
-                    const row = selectedRows[index];
-                    cols[1].textContent = row.item_code;     // รหัส
-                    cols[2].textContent = row.description;   // รายการ
-                    cols[3].textContent = row.rate;        // อัตรา (เอา amount ไปแทน)
-                    cols[4].textContent = row.quantity;                 // จำนวน (fix = 1)
-                    cols[5].textContent = row.amount;        // เป็นเงิน
-                } else {
-                    // ถ้าไม่มีข้อมูล → ล้างค่าให้ว่าง
-                    for (let i = 1; i < cols.length; i++) {
-                        cols[i].textContent = "";
+            // เติมข้อมูลใหม่ต่อจากแถวสุดท้าย
+            selectedRows.forEach((row, idx) => {
+                const targetIndex = lastFilledIndex + 1 + idx;
+                if (targetIndex < rows.length) {
+                    const rowKey = `${row.bill_no}_${row.item_code}_${row.m_y_prd}`;
+
+                    // เช็คว่ามี rowKey นี้แล้วหรือยัง
+                    const exists = Array.from(rows).some(tr => tr.dataset.rowKey === rowKey);
+
+                    if (!exists) {
+                        const cols = rows[targetIndex].querySelectorAll("td");
+                        rows[targetIndex].dataset.rowKey = rowKey;   // เก็บ key ไว้ที่ <tr>
+                        cols[1].textContent = row.item_code;
+                        cols[2].textContent = row.description;
+                        cols[3].textContent = row.rate;
+                        cols[4].textContent = row.quantity;
+                        cols[5].textContent = row.amount;
+                    }  else {
+                        console.log("skip duplicate:", rowKey);
                     }
                 }
             });
 
+            // เคลียร์ selectedRows หลังใช้เสร็จ
+            // selectedRows = [];
+
+            // ✅ คำนวณภาษีใหม่ทุกครั้งที่มีการเลือกบิล
+            updateVatSummary();
 
         }
     });
