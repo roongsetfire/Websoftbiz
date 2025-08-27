@@ -37,7 +37,6 @@ INSTALLED_APPS = [
     "django.contrib.sessions",
     "django.contrib.messages",
     "django.contrib.staticfiles",
-    "expense",
     "m34",
     "home",
     "m35",
@@ -60,7 +59,6 @@ TEMPLATES = [
         "BACKEND": "django.template.backends.django.DjangoTemplates",
         "DIRS": [
             BASE_DIR / "templates",
-            BASE_DIR / "expense" / "templates",
             BASE_DIR / "m34" / "templates",
             BASE_DIR / "home" / "templates",
             BASE_DIR / "m35" / "templates",

@@ -1,12 +1,12 @@
 # forms.py
 from django import forms
 from django.utils import timezone
-from .models import CmtArtr_, CmtArtrItem_
+from .models import CmtArtr, CmtArtrItem
 
 
 class CmtArtrForm(forms.ModelForm):
     class Meta:
-        model = CmtArtr_
+        model = CmtArtr
         fields = [
             "bill_no",
             "date",
@@ -69,7 +69,7 @@ class CmtArtrForm(forms.ModelForm):
 
 class CmtArtrItemForm(forms.ModelForm):
     class Meta:
-        model = CmtArtrItem_
+        model = CmtArtrItem
         fields = [
             "row_number",
             "m_y_prd",

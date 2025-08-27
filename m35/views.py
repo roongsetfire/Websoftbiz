@@ -2,7 +2,7 @@ from django.shortcuts import render
 from m35.forms import CmtRctrForm
 from django.http import JsonResponse
 from .models import CmtRctr
-from expense.models import CmtArtrItem
+from m34.models import CmtArtrItem
 import json
 from django.core.serializers.json import DjangoJSONEncoder
 
