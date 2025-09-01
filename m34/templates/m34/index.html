@@ -3,7 +3,7 @@
 
 {% load static %}
 
-{% block title %}รายการใบเสร็จ - Softbiz{% endblock %}
+{% block title %}M34{% endblock %}
 
 {% block content %}
     <style>
@@ -84,8 +84,8 @@
                             <td class="border border-gray-300 px-2 py-1 whitespace-nowrap">{{ record.bill_no }}</td>
                             <td class="border border-gray-300 px-2 py-1 whitespace-nowrap">{{ record.room_no_1 }}</td>
                             <td class="border border-gray-300 px-2 py-1 whitespace-nowrap">{{ record.member_2 }}</td>
-                            <td class="border border-gray-300 px-2 py-1 text-center whitespace-nowrap">{{ record.remark_1|default:"-" }}</td>
-                            <td class="border border-gray-300 px-2 py-1 whitespace-nowrap">{{ record.textstamp|default:""|truncatechars:15 }}</td>
+                            <td class="border border-gray-300 px-2 py-1 text-center whitespace-nowrap">{{ record.amount|default:"-" }}</td>
+                            <td class="border border-gray-300 px-2 py-1 whitespace-nowrap">{{ record.remark_1 }}</td>
                         </tr>
                         {% empty %}
                         <tr>
@@ -238,26 +238,26 @@
                                 <tr class="cursor-pointer even:bg-gray-50 border-b border-gray-200">
                                     <td class="px-2 py-1 whitespace-nowrap">
                                         <input type="text" name="item_code" id="item_code_table" value="" 
-                                               class="w-full px-1 py-0.5 border border-gray-300 focus:outline-none focus:ring-1 focus:ring-blue-500 item-code"
+                                               class="w-full px-1 py-0.5 border border-gray-300 bg-gray-50 focus:outline-none focus:ring-1 focus:ring-blue-500 item-code"
                                                onkeypress="handleItemCode(event, this)">
                                     </td>
                                     <td class="px-2 py-1 whitespace-nowrap">
                                         <input type="text" name="description" id="description_table" value="" 
-                                               class="w-full px-1 py-0.5 border border-gray-300 focus:outline-none focus:ring-1 focus:ring-blue-500 description">
+                                               class="w-full px-1 py-0.5 border border-gray-300 bg-gray-50 focus:outline-none focus:ring-1 focus:ring-blue-500 description">
                                     </td>
                                     <td class="px-2 py-1 whitespace-nowrap">
                                         <input type="number" name="rate" id="rate_table" value="" 
-                                               class="w-full px-1 py-0.5 border border-gray-300 focus:outline-none focus:ring-1 focus:ring-blue-500 rate" 
+                                               class="w-full px-1 py-0.5 border border-gray-300 bg-gray-50 focus:outline-none focus:ring-1 focus:ring-blue-500 rate" 
                                                step="0.01" onchange="calculateAmount(this)">
                                     </td>
                                     <td class="px-2 py-1 whitespace-nowrap">
                                         <input type="number" name="quantity" id="quantity_table" value="" 
-                                               class="w-full px-1 py-0.5 border border-gray-300 focus:outline-none focus:ring-1 focus:ring-blue-500 quantity" 
+                                               class="w-full px-1 py-0.5 border border-gray-300 bg-gray-50 focus:outline-none focus:ring-1 focus:ring-blue-500 quantity" 
                                                step="0.01" onchange="calculateAmount(this)">
                                     </td>
                                     <td class="px-2 py-1 text-center whitespace-nowrap">
                                         <input type="text" name="amount" id="amount_table" value="" 
-                                               class="w-full px-1 py-0.5 border border-gray-300 text-center bg-gray-50" readonly>
+                                               class="w-full px-1 py-0.5 border border-gray-300 bg-gray-50 text-center" readonly>
                                     </td>
                                 </tr>
                             </tbody>
@@ -296,8 +296,6 @@
                     </div>
                 </div>
 
-            
-
                 <!-- Notes Section -->
                 <label class="flex gap-2 mb-1 p-1 items-center min-w-20">หมายเหตุ</label>
                 <div class="flex gap-2 mt-1 items-center">
@@ -305,21 +303,9 @@
                 </div>
                 
                 <div class="flex gap-2 mb-1 items-center">
-                    <input type="text" name="textstamp" class="flex-1 px-1 py-0.5 border border-gray-600 bg-gray-50 focus:outline-none focus:ring-1 focus:ring-blue-500" id="textstamp">
+                    <input type="text" name="remark_2" class="flex-1 px-1 py-0.5 border border-gray-600 bg-gray-50 focus:outline-none focus:ring-1 focus:ring-blue-500" id="remark_2">
                 </div>
 
-                <!-- Submit Button -->
-                <!-- <div class="flex justify-end p-1">
-                    <button type="submit" class="gradient-gray border border-gray-600 px-2 py-0.5 cursor-pointer hover:bg-gray-300">บันทึก</button>
-                </div> -->
-                <!-- Pagination Info -->
-                <div class="gradient-light-gray border-t border-gray-400 px-2 py-1 flex gap-1 items-center">
-                    <div class="hotkey-hint">
-                        <div class="ml-2 text-gray-600">
-                            <button type="submit">F2 เพิ่ม</button> | F3 แก้ไข | F4 ลบ | F5 ค้นหา | F6 พิมพ์ | F7 บันทึก | F8 ออก
-                        </div>
-                    </div>
-                </div>      
         
             </form>
         </div>
@@ -394,220 +380,6 @@
         let formMode = 'view';
         let selectedRow = null;
 
-        // Select record in table
-        function selectRecord(row, recordId) {
-            // Remove previous selection
-            if (selectedRow) {
-                selectedRow.classList.remove('!bg-red-100');
-            }
-            
-            // Add selection to clicked row
-            row.classList.add('!bg-red-100');
-            selectedRow = row;
-            
-            // Load record details
-            loadRecordDetails(recordId);
-        }
-
-        // Load record details from table row
-        function loadRecordDetails(recordId) {
-            const row = document.querySelector(`tr[data-id="${recordId}"]`);
-            if (!row) return;
-
-            const cells = row.cells;
-            
-            // Fill form with record data from table
-            document.getElementById('bill_no').value = cells[2].textContent;
-            document.getElementById('date').value = formatDateForInput(cells[1].textContent);
-            document.getElementById('month').value = cells[0].textContent;
-            document.getElementById('year').value = new Date().getFullYear(); // Default current year
-            document.getElementById('prd').value = cells[3].textContent;
-            
-            // Customer names
-            const customerCell = cells[4];
-            const customerText = customerCell.textContent.trim();
-            const customerLines = customerText.split('\n');
-            document.getElementById('member_1').value = customerLines[1] || '';
-            console.log(customerLines);
-            document.getElementById('member_2').value = customerLines[0] || '';
-            
-            document.getElementById('remark_1').value = cells[5].textContent === '-' ? '' : cells[5].textContent;
-            document.getElementById('textstamp').value = cells[6].textContent;
-            
-            currentRecordId = recordId;
-            setFormMode('view');
-        }
-
-        // Format date for input field (DD/MM/YYYY to YYYY-MM-DD)
-        function formatDateForInput(dateStr) {
-            if (!dateStr || dateStr === '-') return '';
-            
-            const parts = dateStr.split('/');
-            if (parts.length === 3) {
-                const day = parts[0].padStart(2, '0');
-                const month = parts[1].padStart(2, '0');
-                const year = parts[2];
-                return `${year}-${month}-${day}`;
-            }
-            return '';
-        }
-
-        // Set form mode
-        function setFormMode(mode) {
-            formMode = mode;
-            const inputs = document.querySelectorAll('#formSection input[type="text"], #formSection input[type="date"]');
-            
-            if (mode === 'view') {
-                inputs.forEach(input => {
-                    input = true;
-                    input.classList.add('bg-gray-50');
-                    input.classList.remove('bg-white');
-                });
-            } else if (mode === 'edit' || mode === 'new') {
-                inputs.forEach(input => {
-                    input = false;
-                    input.classList.remove('bg-gray-50');
-                    input.classList.add('bg-white');
-                });
-            }
-        }
-
-        // New record
-        function newRecord() {
-            // Clear form
-            document.querySelectorAll('#formSection input[type="text"], #formSection input[type="date"]').forEach(input => {
-                input.value = '';
-            });
-            
-            // Set current date
-            const today = new Date();
-            document.getElementById('date').value = today.toISOString().split('T')[0];
-            document.getElementById('month').value = String(today.getMonth() + 1).padStart(2, '0');
-            document.getElementById('year').value = today.getFullYear();
-            
-            currentRecordId = null;
-            setFormMode('new');
-            
-            // Clear table selection
-            if (selectedRow) {
-                selectedRow.classList.remove('!bg-red-100');
-                selectedRow = null;
-            }
-        }
-
-        // Edit record
-        function editRecord() {
-            if (currentRecordId) {
-                setFormMode('edit');
-            } else {
-                showMessage('กรุณาเลือกข้อมูลที่ต้องการแก้ไข', 'error');
-            }
-        }
-
-        // Cancel edit
-        function cancelEdit() {
-            if (currentRecordId) {
-                loadRecordDetails(currentRecordId);
-            } else {
-                clearForm();
-                setFormMode('view');
-            }
-        }
-
-        // Clear form
-        function clearForm() {
-            document.querySelectorAll('#formSection input[type="text"], #formSection input[type="date"]').forEach(input => {
-                input.value = '';
-            });
-            currentRecordId = null;
-        }
-
-        // Save record
-        function saveRecord() {
-            const formData = new FormData();
-            
-            // Collect form data
-            formData.append('bill_no', document.getElementById('bill_no').value);
-            formData.append('date', document.getElementById('date').value);
-            formData.append('month', document.getElementById('month').value);
-            formData.append('year', document.getElementById('year').value);
-            formData.append('prd', document.getElementById('prd').value);
-            formData.append('room_no_1', document.getElementById('room_no_1').value);
-            formData.append('room_no_2', document.getElementById('room_no_2').value);
-            formData.append('member_1', document.getElementById('member_1').value);
-            formData.append('member_2', document.getElementById('member_2').value);
-            formData.append('duedate', document.getElementById('duedate').value);
-            formData.append('remark_1', document.getElementById('remark_1').value);
-            formData.append('textstamp', document.getElementById('textstamp').value);
-
-            // Validate required fields
-            if (!formData.get('bill_no') || !formData.get('date') || !formData.get('member_1')) {
-                showMessage('กรุณากรอกข้อมูลที่จำเป็นให้ครบถ้วน', 'error');
-                return;
-            }
-
-            showLoading();
-            
-            // Simulate save (replace with actual AJAX call)
-            setTimeout(() => {
-                hideLoading();
-                showMessage(currentRecordId ? 'แก้ไขข้อมูลเรียบร้อยแล้ว' : 'บันทึกข้อมูลเรียบร้อยแล้ว', 'success');
-                
-                if (!currentRecordId) {
-                    // Refresh page for new record
-                    setTimeout(() => {
-                        window.location.reload();
-                    }, 1000);
-                } else {
-                    setFormMode('view');
-                }
-            }, 1000);
-        }
-
-        // Delete record
-        function deleteRecord() {
-            if (!currentRecordId) {
-                showMessage('กรุณาเลือกข้อมูลที่ต้องการลบ', 'error');
-                return;
-            }
-
-            if (!confirm('คุณแน่ใจหรือไม่ที่จะลบข้อมูลนี้?')) {
-                return;
-            }
-
-            showLoading();
-            
-            // Simulate delete (replace with actual AJAX call)
-            setTimeout(() => {
-                hideLoading();
-                showMessage('ลบข้อมูลเรียบร้อยแล้ว', 'success');
-                
-                // Remove row from table
-                if (selectedRow) {
-                    selectedRow.remove();
-                    selectedRow = null;
-                }
-                
-                clearForm();
-                setFormMode('view');
-            }, 1000);
-        }
-
-        // Print report
-        function printReport() {
-            window.print();
-        }
-
-        // Show loading
-        function showLoading() {
-            document.getElementById('loading').classList.remove('hidden');
-        }
-
-        // Hide loading
-        function hideLoading() {
-            document.getElementById('loading').classList.add('hidden');
-        }
-
         // Show message
         function showMessage(message, type = 'success') {
             const messageDiv = document.createElement('div');
@@ -629,11 +401,429 @@
             }, 3000);
         }
 
+        // Set form mode - ฟังก์ชันสำคัญที่ควบคุมการเปิด/ปิดการแก้ไข
+        function setFormMode(mode) {
+            formMode = mode;
+            // เพิ่ม selector ให้ครอบคลุมทุกฟิลด์ที่ต้องการ
+            const inputs = document.querySelectorAll('#formSection input[type="text"], ' +
+                '#formSection input[type="date"], ' +
+                '#formSection input[type="number"]'
+            );
+            
+            console.log('Setting form mode to:', mode);
+            console.log('Found inputs:', inputs.length);
+            
+            if (mode === 'view') {
+                inputs.forEach(input => {
+                    input.disabled = true;
+                    if (['text', 'date', 'number'].includes(input.type)) {
+                        input.style.backgroundColor = '#f0f0f0';  // เทาอ่อน
+                    }
+                });
+                
+                // เช็คให้แน่ใจว่าฟิลด์เฉพาะถูก disable
+                const specificFields = ['prd', 'duedate', 'member_1'];
+                specificFields.forEach(fieldId => {
+                    const field = document.getElementById(fieldId);
+                    if (field) {
+                        field.disabled = true;
+                        field.style.backgroundColor = '#f0f0f0';
+                        console.log('Disabled field:', fieldId);
+                    }
+                });
+                
+            } else if (mode === 'edit' || mode === 'new') {
+                inputs.forEach(input => {
+                    input.disabled = false;
+                    if (['text', 'date', 'number'].includes(input.type)) {
+                        input.style.backgroundColor = '#ffffff';  // ขาว
+                    }
+                });
+                
+                // เช็คให้แน่ใจว่าฟิลด์เฉพาะถูก enable
+                const specificFields = ['prd', 'duedate', 'member_1'];
+                specificFields.forEach(fieldId => {
+                    const field = document.getElementById(fieldId);
+                    if (field) {
+                        field.disabled = false;
+                        field.style.backgroundColor = '#ffffff';
+                        console.log('Enabled field:', fieldId);
+                    }
+                });
+            }
+            
+            console.log('Form mode set to:', formMode);
+        }
+
+        // Clear form
+        function clearForm() {
+            document.querySelectorAll('#formSection input[type="text"], #formSection input[type="date"], #formSection input[type="number"]').forEach(input => {
+                input.value = '';
+            });
+            currentRecordId = null;
+        }
+
+        // New record
+        function new_Record() {
+            console.log('newrecord...');
+            // Clear form
+            clearForm();
+            
+            // Set current date
+            const today = new Date();
+            document.getElementById('date').value = today.toISOString().split('T')[0];
+            document.getElementById('month').value = String(today.getMonth() + 1).padStart(2, '0');
+            document.getElementById('year').value = today.getFullYear();
+            
+            // ขอเลขที่ใบแจ้งหนี้ใหม่จาก server
+            fetch('/m34/?action=get_new_bill_no')
+            .then(response => response.json())
+            .then(data => {
+                if (data.status === 'success') {
+                    document.getElementById('bill_no').value = data.bill_no;
+                }
+            })
+            .catch(error => {
+                console.error('Error getting new bill no:', error);
+                // fallback: ใช้ timestamp
+                const timestamp = Date.now().toString().slice(-6);
+                document.getElementById('bill_no').value = `BILL-${timestamp}`;
+            });
+            
+            currentRecordId = null;
+            setFormMode('new');
+            
+            // Clear table selection
+            if (selectedRow) {
+                selectedRow.classList.remove('!bg-red-100');
+                selectedRow = null;
+            }
+        }
+
+        // Select record in table
+        function selectRecord(row, recordId) {
+            // Remove previous selection
+            if (selectedRow) {
+                selectedRow.classList.remove('!bg-red-100');
+            }
+            
+            // Add selection to clicked row
+            row.classList.add('!bg-red-100');
+            selectedRow = row;
+            
+            // Load record details
+            loadRecordDetails(recordId);
+        }
+
+        // Load record details from table row
+        function loadRecordDetails(recordId) {
+            // ใช้ AJAX เพื่อดึงข้อมูลจาก database โดยตรง
+            fetch(`/m34/?action=get_record&id=${recordId}`)
+            .then(response => response.json())
+            .then(data => {
+                if (data.status === 'success') {
+                    const record = data.record;
+                    
+                    // ใส่ข้อมูลหลักในฟอร์ม
+                    document.getElementById('bill_no').value = record.bill_no || '';
+                    document.getElementById('date').value = record.date || '';
+                    document.getElementById('month').value = record.month || '';
+                    document.getElementById('year').value = record.year || '';
+                    document.getElementById('prd').value = record.prd || '';  // ดึงจาก database
+                    document.getElementById('room_no_1').value = record.room_no_1 || '';
+                    document.getElementById('room_no_2').value = record.room_no_2 || '';
+                    document.getElementById('member_1').value = record.member_1 || '';  // ดึงจาก database
+                    document.getElementById('member_2').value = record.member_2 || '';
+                    document.getElementById('duedate').value = record.duedate || '';
+                    document.getElementById('remark_1').value = record.remark_1 || '';
+                    document.getElementById('remark_2').value = record.remark_2 || '';
+                    
+                    // ใส่ข้อมูลรายการสินค้าในตาราง
+                    document.getElementById('item_code_table').value = record.item_code || '';
+                    document.getElementById('description_table').value = record.description || '';
+                    document.getElementById('rate_table').value = record.rate || '';
+                    document.getElementById('quantity_table').value = record.quantity || '';
+                    document.getElementById('amount_table').value = record.amount || '';
+                    
+                    // คำนวณ VAT ใหม่หลังจากใส่ข้อมูล
+                    updateSummary();
+                    
+                    console.log('Loaded complete record from database:', record);
+                } else {
+                    // ถ้า AJAX ไม่สำเร็จ ให้ใช้วิธีเดิมจากตาราง
+                    loadFromTableCells(recordId);
+                }
+            })
+            .catch(error => {
+                console.error('Error loading record:', error);
+                // ถ้า AJAX error ให้ใช้วิธีเดิมจากตาราง
+                loadFromTableCells(recordId);
+            });
+            
+            currentRecordId = recordId;
+            setFormMode('view');
+        }
+        
+        // ฟังก์ชันสำรองดึงข้อมูลจากตาราง (วิธีเดิม) - ใช้เมื่อ AJAX ไม่ทำงาน
+        function loadFromTableCells(recordId) {
+            const row = document.querySelector(`tr[data-id="${recordId}"]`);
+            if (!row) return;
+
+            const cells = row.cells;
+            
+            // Fill form with record data from table (ข้อมูลพื้นฐานที่มีในตาราง)
+            document.getElementById('bill_no').value = cells[2].textContent.trim();
+            document.getElementById('date').value = formatDateForInput(cells[1].textContent);
+            document.getElementById('month').value = cells[0].textContent.trim();
+            document.getElementById('year').value = new Date().getFullYear();
+            document.getElementById('room_no_1').value = cells[3].textContent.trim();
+            document.getElementById('member_2').value = cells[4].textContent.trim();
+            document.getElementById('remark_1').value = cells[5].textContent === '-' ? '' : cells[5].textContent.trim();
+            document.getElementById('remark_2').value = cells[6].textContent.trim();
+            
+            // ข้อมูลที่ไม่มีในตาราง - ให้ค่าว่างหรือค่าเริ่มต้น
+            document.getElementById('room_no_2').value = '';
+            document.getElementById('member_1').value = ''; // จะต้องป้อนเองเพราะไม่มีในตาราง
+            document.getElementById('prd').value = '';
+            document.getElementById('duedate').value = '';
+            
+            console.log('Loaded record from table cells (fallback mode):', {
+                id: recordId,
+                bill_no: cells[2].textContent.trim(),
+                room_no_1: cells[3].textContent.trim(),
+                member_2: cells[4].textContent.trim(),
+                note: 'member_1 and other fields need to be filled manually'
+            });
+        }
+
+        // Format date for input field (DD/MM/YYYY to YYYY-MM-DD)
+        function formatDateForInput(dateStr) {
+            if (!dateStr || dateStr === '-') return '';
+            
+            const parts = dateStr.split('/');
+            if (parts.length === 3) {
+                const day = parts[0].padStart(2, '0');
+                const month = parts[1].padStart(2, '0');
+                const year = parts[2];
+                return `${year}-${month}-${day}`;
+            }
+            return '';
+        }
+
+        // Edit record
+        function editRecord() {
+            if (currentRecordId) {
+                setFormMode('edit');
+            } else {
+                showMessage('กรุณาเลือกข้อมูลที่ต้องการแก้ไข', 'error');
+            }
+        }
+
+        // Cancel edit
+        function cancelEdit() {
+            if (currentRecordId) {
+                loadRecordDetails(currentRecordId);
+            } else {
+                clearForm();
+                setFormMode('view');
+            }
+        }
+
+        function getCookie(name) {
+            let cookieValue = null;
+            if (document.cookie) {
+                const cookies = document.cookie.split(';');
+                for (let cookie of cookies) {
+                    cookie = cookie.trim();
+                    if (cookie.startsWith(name + '=')) {
+                        cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                        break;
+                    }
+                }
+            }
+            return cookieValue;
+        }
+
+        // Save record
+        function saveRecord() {
+            // Debug: ตรวจสอบ form mode
+            console.log('Current form mode:', formMode);
+            if (formMode === 'view') {
+                showMessage('กรุณากดแก้ไข (F3) ก่อนบันทึกข้อมูล', 'error');
+                return;
+            }
+
+            const formData = new FormData();
+            
+            // Collect form data
+            formData.append('bill_no', document.getElementById('bill_no').value);
+            formData.append('date', document.getElementById('date').value);
+            formData.append('month', document.getElementById('month').value);
+            formData.append('year', document.getElementById('year').value);
+            formData.append('prd', document.getElementById('prd').value);
+            formData.append('room_no_1', document.getElementById('room_no_1').value);
+            formData.append('room_no_2', document.getElementById('room_no_2').value);
+            formData.append('member_1', document.getElementById('member_1').value);
+            formData.append('member_2', document.getElementById('member_2').value);
+            formData.append('duedate', document.getElementById('duedate').value);
+            formData.append('remark_1', document.getElementById('remark_1').value);
+            formData.append('remark_2', document.getElementById('remark_2').value);
+
+            // Add item data from table
+            formData.append('item_code', document.getElementById('item_code_table').value);
+            formData.append('description', document.getElementById('description_table').value);
+            formData.append('rate', document.getElementById('rate_table').value);
+            formData.append('quantity', document.getElementById('quantity_table').value);
+            formData.append('amount', document.getElementById('amount_table').value);
+            
+            // Add calculated values
+            formData.append('value_n', document.getElementById('cb1').value);
+            formData.append('value_v', document.getElementById('cb2').value);
+            formData.append('vat', document.getElementById('cb3').value);
+            formData.append('total_amount', document.getElementById('cb4').value);
+            formData.append('paid_amount', document.getElementById('cb5').value);
+            formData.append('outstanding_amount', document.getElementById('cb6').value);
+
+            if (currentRecordId) {
+                formData.append('id', currentRecordId);
+                formData.append('action', 'edit');
+            } else {
+                formData.append('action', 'create');
+            }
+
+            // Debug: แสดงข้อมูลที่จะส่ง
+            console.log('Form data to send:');
+            for (let [key, value] of formData.entries()) {
+                console.log(key, ':', value);
+            }
+
+            // Validate required fields
+            if (!formData.get('bill_no') || !formData.get('date') || !formData.get('member_1')) {
+                showMessage('กรุณากรอกข้อมูลที่จำเป็นให้ครบถ้วน (เลขที่ใบแจ้งหนี้, วันที่, รหัส-ชื่อ)', 'error');
+                return;
+            }
+
+            showLoading();
+            
+            // Send AJAX request to save data
+            fetch('/m34/', {
+                method: 'POST',
+                headers: {
+                    'X-CSRFToken': getCookie('csrftoken'),
+                    'X-Requested-With': 'XMLHttpRequest',  // บอกว่าเป็น AJAX request
+                },
+                body: formData
+            })
+            .then(response => {
+                console.log('Response status:', response.status);
+                console.log('Response headers:', response.headers);
+                
+                hideLoading();
+                
+                if (!response.ok) {
+                    return response.text().then(text => {
+                        console.error('Server error response:', text);
+                        throw new Error(`Server error: ${response.status} - ${text}`);
+                    });
+                }
+                
+                return response.json();
+            })
+            .then(data => {
+                console.log('Server response:', data);
+                
+                if (data.status === 'success' || data.message?.includes('เพิ่มเรียบร้อยแล้ว') || data.message?.includes('แก้ไขเรียบร้อยแล้ว')) {
+                    showMessage(data.message || 'บันทึกข้อมูลเรียบร้อยแล้ว', 'success');
+                    setFormMode('view');
+
+                    // Reload page to show updated data
+                    setTimeout(() => {
+                        window.location.reload();
+                    }, 1000);
+
+                } else {
+                    showMessage(data.message || 'เกิดข้อผิดพลาดในการบันทึกข้อมูล', 'error');
+                }
+            })
+            .catch(error => {
+                console.error('Fetch error:', error);
+                hideLoading();
+                showMessage(`เกิดข้อผิดพลาด: ${error.message}`, 'error');
+            });
+        }
+
+        // Delete record
+        function deleteRecord() {
+            if (!currentRecordId) {
+                showMessage('กรุณาเลือกข้อมูลที่ต้องการลบ', 'error');
+                return;
+            }
+
+            if (!confirm('คุณแน่ใจหรือไม่ที่จะลบข้อมูลนี้?')) {
+                return;
+            }
+
+            showLoading();
+            
+            // Send AJAX request to delete data
+            const formData = new FormData();
+            formData.append('action', 'delete');
+            formData.append('id', currentRecordId);
+            
+            fetch('/m34/', {
+                method: 'POST',
+                headers: {
+                    'X-CSRFToken': getCookie('csrftoken'),
+                },
+                body: formData
+            })
+            .then(response => {
+                hideLoading();
+                if (!response.ok) throw new Error('เกิดข้อผิดพลาดจาก server');
+                return response.json();
+            })
+            .then(data => {
+                if (data.status === 'success') {
+                    showMessage(data.message || 'ลบข้อมูลเรียบร้อยแล้ว', 'success');
+                    
+                    // Remove row from table
+                    if (selectedRow) {
+                        selectedRow.remove();
+                        selectedRow = null;
+                    }
+                    
+                    clearForm();
+                    setFormMode('view');
+                } else {
+                    showMessage(data.message || 'เกิดข้อผิดพลาดในการลบข้อมูล', 'error');
+                }
+            })
+            .catch(error => {
+                hideLoading();
+                showMessage(error.message || 'เกิดข้อผิดพลาดในการติดต่อ server', 'error');
+            });
+        }
+
+        // Print report
+        function printReport() {
+            window.print();
+        }
+
+        // Show loading
+        function showLoading() {
+            document.getElementById('loading').classList.remove('hidden');
+        }
+
+        // Hide loading
+        function hideLoading() {
+            document.getElementById('loading').classList.add('hidden');
+        }
+
         // Keyboard shortcuts
         document.addEventListener('keydown', function(e) {
             if (e.key === 'F2') {
                 e.preventDefault();
-                newRecord();
+                new_Record();
             } else if (e.key === 'F3') {
                 e.preventDefault();
                 editRecord();
@@ -662,6 +852,9 @@
                 if (formMode === 'edit' || formMode === 'new') {
                     cancelEdit();
                 }
+            } else if (e.key === 'F10') {
+                e.preventDefault();
+                saveRecord();
             }
         });
 

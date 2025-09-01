@@ -7,20 +7,7 @@ from .models import CmtArtr, CmtArtrItem
 class CmtArtrForm(forms.ModelForm):
     class Meta:
         model = CmtArtr
-        fields = [
-            "bill_no",
-            "date",
-            "month",
-            "year",
-            "prd",
-            "room_no_1",
-            "room_no_2",
-            "member_1",
-            "member_2",
-            "duedate",
-            "remark_1",
-            "textstamp",
-        ]
+        fields = "__all__"  # หรือระบุฟิลด์ที่ต้องการ
 
         widgets = {
             "bill_no": forms.TextInput(
@@ -50,10 +37,10 @@ class CmtArtrForm(forms.ModelForm):
             ),
             "duedate": forms.DateInput(attrs={"class": "form-control", "type": "date"}),
             "remark_1": forms.TextInput(
-                attrs={"class": "form-control", "placeholder": "ชำระภายในวันที่"}
+                attrs={"class": "form-control", "placeholder": "หมายเหตุ 1"}
             ),
-            "textstamp": forms.Textarea(
-                attrs={"class": "form-control", "rows": 3, "placeholder": "หมายเหตุ"}
+            "remark_2": forms.Textarea(
+                attrs={"class": "form-control", "rows": 3, "placeholder": "หมายเหตุ 2"}
             ),
         }
 
@@ -71,7 +58,7 @@ class CmtArtrItemForm(forms.ModelForm):
     class Meta:
         model = CmtArtrItem
         fields = [
-            "row_number",
+            "room_no",
             "m_y_prd",
             "bill_no",
             "item_code",
@@ -82,7 +69,7 @@ class CmtArtrItemForm(forms.ModelForm):
         ]
 
         widgets = {
-            "row_number": forms.NumberInput(attrs={"class": "form-control"}),
+            "room_no": forms.TextInput(attrs={"class": "form-control"}),
             "m_y_prd": forms.TextInput(attrs={"class": "form-control"}),
             "bill_no": forms.TextInput(attrs={"class": "form-control"}),
             "item_code": forms.TextInput(attrs={"class": "form-control"}),

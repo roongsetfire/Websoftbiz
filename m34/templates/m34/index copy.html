@@ -692,3 +692,721 @@
         });
     </script>
 {% endblock %}
+
+
+
+
+<!-- templates/index.html -->
+{% extends 'base.html' %}
+
+{% load static %}
+
+{% block title %}M34{% endblock %}
+
+{% block content %}
+    <style>
+        /* Custom styles that can't be easily done with Tailwind */
+        .gradient-blue {
+            background: linear-gradient(to bottom, #4a90e2, #357abd);
+        }
+        
+        .gradient-gray {
+            background: linear-gradient(to bottom, #f8f8f8, #e8e8e8);
+        }
+        
+        .gradient-light-gray {
+            background: linear-gradient(to bottom, #f0f0f0, #e0e0e0);
+        }
+
+        /* Animation for messages */
+        @keyframes slideIn {
+            from { transform: translateX(100%); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
+        }
+        
+        .animate-slide-in {
+            animation: slideIn 0.3s ease-out;
+        }
+
+        /* Custom task grid */
+        .task-grid {
+            display: grid;
+            grid-template-columns: 25px 1fr 60px 50px 70px;
+            gap: 3px;
+            margin-bottom: 8px;
+        }
+    </style>
+
+    <!-- Loading Indicator -->
+    <div id="loading" class="fixed top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-black bg-opacity-80 text-white p-5 rounded z-50 hidden">
+        กำลังประมวลผล...
+    </div>
+
+    <!-- Messages -->
+    <div id="messages" class="fixed top-12 right-5 z-40 max-w-xs"></div>
+
+    <!-- CSRF Token -->
+    {% csrf_token %}
+
+    <!-- Title Bar -->
+    <div class="gradient-blue text-white px-4 py-2 flex justify-center items-center relative font-bold text-sm">
+        <span>ใบแจ้งค่าใช้จ่าย</span>
+
+    </div>
+
+    <div class="flex bg-green-100 font-thai overflow-hidden" style="height: calc(100vh - 80px);">
+        
+        <!-- Left Panel - Data Table (50% width) -->
+        <div class="flex-1 bg-green-100 flex flex-col text-center">
+            
+            <!-- Table Container -->
+            <div class="flex-1 bg-white overflow-auto border border-gray-400 m-1">
+                <table class="w-full border-collapse">
+                    <thead>
+                        <tr>
+                            <th class="gradient-light-gray border border-gray-600 px-2 py-1 font-bold sticky top-0 z-10 w-20">เดือน-งวด</th>
+                            <th class="gradient-light-gray border border-gray-600 px-2 py-1 font-bold sticky top-0 z-10 w-20">วันที่</th>
+                            <th class="gradient-light-gray border border-gray-600 px-2 py-1 font-bold sticky top-0 z-10 w-20">ใบแจ้งหนี้</th>
+                            <th class="gradient-light-gray border border-gray-600 px-2 py-1 font-bold sticky top-0 z-10 w-20">ห้อง</th>
+                            <th class="gradient-light-gray border border-gray-600 px-2 py-1 font-bold sticky top-0 z-10 w-32">ลูกค้า</th>
+                            <th class="gradient-light-gray border border-gray-600 px-2 py-1 font-bold sticky top-0 z-10 w-20">จำนวนเงิน</th>
+                            <th class="gradient-light-gray border border-gray-600 px-2 py-1 font-bold sticky top-0 z-10 w-24">หมายเหตุ</th>
+                        </tr>
+                    </thead>
+                    <tbody id="dataTable">
+                        {% for record in cmt_artr %}
+                        <tr onclick="selectRecord(this, '{{ record.id }}')" data-id="{{ record.id }}" 
+                            class="cursor-pointer hover:bg-blue-100 even:bg-gray-50 border-b border-gray-200">
+                            <td class="border border-gray-300 px-2 py-1 whitespace-nowrap">{{ record.month|default:"-" }}</td>
+                            <td class="border border-gray-300 px-2 py-1 whitespace-nowrap">{{ record.date|date:"d/m/Y" }}</td>
+                            <td class="border border-gray-300 px-2 py-1 whitespace-nowrap">{{ record.bill_no }}</td>
+                            <td class="border border-gray-300 px-2 py-1 whitespace-nowrap">{{ record.room_no_1 }}</td>
+                            <td class="border border-gray-300 px-2 py-1 whitespace-nowrap">{{ record.member_2 }}</td>
+                            <td class="border border-gray-300 px-2 py-1 text-center whitespace-nowrap">{{ record.remark_1|default:"-" }}</td>
+                            <td class="border border-gray-300 px-2 py-1 whitespace-nowrap">{{ record.textstamp|default:""|truncatechars:15 }}</td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="7" class="border border-gray-300 text-center py-5 text-gray-600">
+                                ไม่พบข้อมูลใบเสร็จ
+                                {% if search_query %}
+                                    สำหรับคำค้นหา "{{ search_query }}"
+                                {% endif %}
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Navigation Buttons -->
+            <div class="bg-green-100 px-2 py-1 flex gap-1 items-center">
+                {% if page_obj.has_previous %}
+                    <a href="?page=1{% if search_query %}&search={{ search_query }}{% endif %}{% if date_from %}&date_from={{ date_from }}{% endif %}{% if date_to %}&date_to={{ date_to }}{% endif %}" 
+                       class="w-6 h-5 gradient-gray border border-gray-600 cursor-pointer flex items-center justify-center text-black no-underline hover:bg-gray-300">|&lt;</a>
+                    <a href="?page={{ page_obj.previous_page_number }}{% if search_query %}&search={{ search_query }}{% endif %}{% if date_from %}&date_from={{ date_from }}{% endif %}{% if date_to %}&date_to={{ date_to }}{% endif %}" 
+                       class="w-6 h-5 gradient-gray border border-gray-600 cursor-pointer flex items-center justify-center text-black no-underline hover:bg-gray-300">&lt;</a>
+                {% else %}
+                    <span class="w-6 h-5 gradient-gray border border-gray-600 flex items-center justify-center text-black opacity-50 cursor-not-allowed">|&lt;</span>
+                    <span class="w-6 h-5 gradient-gray border border-gray-600 flex items-center justify-center text-black opacity-50 cursor-not-allowed">&lt;</span>
+                {% endif %}
+                
+                {% if page_obj.has_next %}
+                    <a href="?page={{ page_obj.next_page_number }}{% if search_query %}&search={{ search_query }}{% endif %}{% if date_from %}&date_from={{ date_from }}{% endif %}{% if date_to %}&date_to={{ date_to }}{% endif %}" 
+                       class="w-6 h-5 gradient-gray border border-gray-600 cursor-pointer flex items-center justify-center text-black no-underline hover:bg-gray-300">&gt;</a>
+                    <a href="?page={{ page_obj.paginator.num_pages }}{% if search_query %}&search={{ search_query }}{% endif %}{% if date_from %}&date_from={{ date_from }}{% endif %}{% if date_to %}&date_to={{ date_to }}{% endif %}" 
+                       class="w-6 h-5 gradient-gray border border-gray-600 cursor-pointer flex items-center justify-center text-black no-underline hover:bg-gray-300">&gt;|</a>
+                {% else %}
+                    <span class="w-6 h-5 gradient-gray border border-gray-600 flex items-center justify-center text-black opacity-50 cursor-not-allowed">&gt;</span>
+                    <span class="w-6 h-5 gradient-gray border border-gray-600 flex items-center justify-center text-black opacity-50 cursor-not-allowed">&gt;|</span>
+                {% endif %}
+                <div class="hotkey-hint flex items-center text-sm text-gray-600 ml-2">
+                    <div class="ml-2 text-gray-600">
+                        หน้า 1 / 3 (1-3 จาก 25) | 
+                    </div>
+                    <button type="button" class="w-16 gradient-gray border border-gray-600 py-0.5 cursor-pointer hover:bg-gray-300 ml-2 rounded text-green-600" 
+                     onclick="new_Record()">F2 เพิ่ม</button>
+                    <button type="button" class="w-20 gradient-gray border border-gray-600 py-0.5 cursor-pointer hover:bg-gray-300 ml-2 rounded text-orange-600" 
+                     onclick="saveRecord()">F10 บันทึก</button>
+                    <button type="button" class="w-16 gradient-gray border border-gray-600 py-0.5 cursor-pointer hover:bg-gray-300 ml-2 rounded text-blue-900" 
+                     onclick="editRecord()">F3 แก้ไข</button>
+                     <button type="button" class="w-16 gradient-gray border border-gray-600 py-0.5 cursor-pointer hover:bg-gray-300 ml-2 rounded text-red-600" 
+                     onclick="deleteRecord()">F4 ลบ</button>
+                    <button type="button" class="w-16 gradient-gray border border-gray-600 py-0.5 cursor-pointer hover:bg-gray-300 ml-2 rounded text-purple-600" 
+                     onclick="">F5 ค้นหา</button>
+                    <button type="button" class="w-16 gradient-gray border border-gray-600 py-0.5 cursor-pointer hover:bg-gray-300 ml-2 rounded text-blue-600" 
+                     onclick="">F6 พิมพ์</button>
+                    <button type="button" class="w-16 gradient-gray border border-gray-600 py-0.5 cursor-pointer hover:bg-gray-300 ml-2 rounded text-yellow-500" 
+                     onclick="">ESC ออก</button>
+                </div>
+            </div>
+           
+        </div>
+
+        <!-- Right Panel (50% width) -->
+        <div class="flex-1 bg-green-100 flex flex-col">
+            <!-- Form Section -->
+            <form method="POST" action="" id="formSection" class="bg-green-100 m-1 mb-1">
+                {% csrf_token %}
+                <div class="p-1">
+                    <div class="flex items-center gap-1 mb-0.5">
+                        <div class="flex-1">
+                            <div class="flex items-center gap-1">
+                                <label class="w-28 flex-shrink-0">เลขที่ใบแจ้งหนี้</label>
+                                <input type="text" name="bill_no" class="w-24 px-1 py-0.5 border border-gray-600 bg-gray-50 focus:outline-none focus:ring-1 focus:ring-blue-500" id="bill_no">
+                            </div>
+                        </div>
+                        <div class="flex-1">
+                            <div class="flex items-center gap-1">
+                                <label class="w-8 flex-shrink-0">วันที่</label>
+                                <input type="date" name="date" class="w-28 px-1 py-0.5 border border-gray-600 bg-gray-50 focus:outline-none focus:ring-1 focus:ring-blue-500" id="date">
+                                <button type="button" class="gradient-gray border border-gray-600 px-2 py-0.5 cursor-pointer hover:bg-gray-300 ml-1" onclick="printReport()">REPORT</button>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="flex items-center gap-1 mb-0.5">
+                        <div class="flex-1">
+                            <div class="flex items-center gap-1">
+                                <label class="w-28 flex-shrink-0">ประจำเดือน</label>
+                                <input type="text" name="month" class="w-8 px-1 py-0.5 border border-gray-600 bg-gray-50 focus:outline-none focus:ring-1 focus:ring-blue-500" id="month">
+                                <label class="mx-1">ปี</label>
+                                <input type="text" name="year" class="w-12 px-1 py-0.5 border border-gray-600 bg-gray-50 focus:outline-none focus:ring-1 focus:ring-blue-500" id="year">
+                            </div>
+                        </div>
+                        <div class="flex-1">
+                            <div class="flex items-center gap-1">
+                                <label class="w-8 flex-shrink-0">งวด</label>
+                                <input type="text" name="prd" class="w-16 px-1 py-0.5 border border-gray-600 bg-gray-50 focus:outline-none focus:ring-1 focus:ring-blue-500" id="prd">
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="flex items-center gap-1 mb-0.5">
+                        <div class="flex-1">
+                            <div class="flex items-center gap-1">
+                                <label class="w-28 flex-shrink-0">เลขห้องที่</label>
+                                <input type="text" name="room_no_1" class="w-32 px-1 py-0.5 border border-gray-600 bg-gray-50 focus:outline-none focus:ring-1 focus:ring-blue-500" id="room_no_1">
+                            </div>
+                        </div>
+                        <div class="flex-1">
+                            <div class="flex items-center gap-1">
+                                <input type="text" name="room_no_2" class="w-48 px-1 py-0.5 border border-gray-600 bg-gray-50 focus:outline-none focus:ring-1 focus:ring-blue-500 ml-9" id="room_no_2">
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="flex items-center gap-1 mb-0.5">
+                        <div class="flex-1">
+                            <div class="flex items-center gap-1">
+                                <label class="w-28 flex-shrink-0">รหัส-ชื่อ</label>
+                                <input type="text" name="member_1" class="w-32 px-1 py-0.5 border border-gray-600 bg-gray-50 focus:outline-none focus:ring-1 focus:ring-blue-500" id="member_1">
+                            </div>
+                        </div>
+                        <div class="flex-1">
+                            <div class="flex items-center gap-1">
+                                <input type="text" name="member_2" class="w-48 px-1 py-0.5 border border-gray-600 bg-gray-50 focus:outline-none focus:ring-1 focus:ring-blue-500 ml-9" id="member_2">
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="flex items-center gap-1 mb-0.5">
+                        <label class="w-28 flex-shrink-0">ชำระภายในวันที่</label>
+                        <input type="date" name="duedate" class="w-28 px-1 py-0.5 border border-gray-600 bg-gray-50 focus:outline-none focus:ring-1 focus:ring-blue-500" id="duedate">
+                    </div>
+                    
+                    <input type="hidden" name="currentRecordId" id="currentRecordId" value="">
+                    <input type="hidden" name="formMode" id="formMode" value="view">
+                </div>
+
+                <!-- Task List -->
+                <div class="bg-white m-1 border border-gray-400 flex-1 flex flex-col mb-1">
+                    <div class="flex-1 overflow-auto border border-gray-400 m-1">
+                        <table class="w-full border-collapse">
+                            <thead>
+                                <tr>
+                                    <th class="gradient-light-gray border border-gray-600 px-2 py-1 font-bold sticky top-0 z-10 w-20">รหัส</th>
+                                    <th class="gradient-light-gray border border-gray-600 px-2 py-1 font-bold sticky top-0 z-10 w-20">รายการ</th>
+                                    <th class="gradient-light-gray border border-gray-600 px-2 py-1 font-bold sticky top-0 z-10 w-20">อัตรา-F12</th>
+                                    <th class="gradient-light-gray border border-gray-600 px-2 py-1 font-bold sticky top-0 z-10 w-20">จำนวน</th>
+                                    <th class="gradient-light-gray border border-gray-600 px-2 py-1 font-bold sticky top-0 z-10 w-32">เป็นเงิน</th>
+                                </tr>
+                            </thead>
+                            <tbody id="dataTable">
+                                <tr class="cursor-pointer even:bg-gray-50 border-b border-gray-200">
+                                    <td class="px-2 py-1 whitespace-nowrap">
+                                        <input type="text" name="item_code" id="item_code_table" value="" 
+                                               class="w-full px-1 py-0.5 border border-gray-300 bg-gray-50 focus:outline-none focus:ring-1 focus:ring-blue-500 item-code"
+                                               onkeypress="handleItemCode(event, this)">
+                                    </td>
+                                    <td class="px-2 py-1 whitespace-nowrap">
+                                        <input type="text" name="description" id="description_table" value="" 
+                                               class="w-full px-1 py-0.5 border border-gray-300 bg-gray-50 focus:outline-none focus:ring-1 focus:ring-blue-500 description">
+                                    </td>
+                                    <td class="px-2 py-1 whitespace-nowrap">
+                                        <input type="number" name="rate" id="rate_table" value="" 
+                                               class="w-full px-1 py-0.5 border border-gray-300 bg-gray-50 focus:outline-none focus:ring-1 focus:ring-blue-500 rate" 
+                                               step="0.01" onchange="calculateAmount(this)">
+                                    </td>
+                                    <td class="px-2 py-1 whitespace-nowrap">
+                                        <input type="number" name="quantity" id="quantity_table" value="" 
+                                               class="w-full px-1 py-0.5 border border-gray-300 bg-gray-50 focus:outline-none focus:ring-1 focus:ring-blue-500 quantity" 
+                                               step="0.01" onchange="calculateAmount(this)">
+                                    </td>
+                                    <td class="px-2 py-1 text-center whitespace-nowrap">
+                                        <input type="text" name="amount" id="amount_table" value="" 
+                                               class="w-full px-1 py-0.5 border border-gray-300 bg-gray-50 text-center" readonly>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                    <div class="p-2 flex-1 flex flex-col">
+                        <div class="my-2 text-gray-600">
+                            ? : / = ชำระแล้ว , x = ชำระบางส่วน
+                        </div>
+                        <div class="mt-2 text-right w-full">
+                            <div class="block my-0.5">
+                                <label for="cb1">มูลค่าสินค้า/บริการN</label>
+                                <input type="text" name="value_n" id="cb1" class="ml-1 w-24 px-1 py-0.5 border border-gray-600 bg-gray-50 focus:outline-none focus:ring-1 focus:ring-blue-500" readonly>
+                            </div>
+                            <div class="block my-0.5">
+                                <label for="cb2">มูลค่าสินค้า/บริการV</label>
+                                <input type="text" name="value_v" id="cb2" class="ml-1 w-24 px-1 py-0.5 border border-gray-600 bg-gray-50 focus:outline-none focus:ring-1 focus:ring-blue-500" readonly>
+                            </div>
+                            <div class="block my-0.5">
+                                <label for="cb3">ภาษีมูลค่าเพิ่ม</label>
+                                <input type="text" name="vat" id="cb3" class="ml-1 w-24 px-1 py-0.5 border border-gray-600 bg-gray-50 focus:outline-none focus:ring-1 focus:ring-blue-500" readonly>
+                            </div>
+                            <div class="block my-0.5">
+                                <label for="cb4">รวมเงินทั้งสิ้น</label>
+                                <input type="text" name="total_amount" id="cb4" class="ml-1 w-24 px-1 py-0.5 border border-gray-600 bg-gray-50 focus:outline-none focus:ring-1 focus:ring-blue-500" readonly>
+                            </div>
+                            <div class="block my-0.5">
+                                <label for="cb5">ยอดชำระแล้ว</label>
+                                <input type="text" name="paid_amount" id="cb5" class="ml-1 w-24 px-1 py-0.5 border border-gray-600 bg-gray-50 focus:outline-none focus:ring-1 focus:ring-blue-500">
+                            </div>
+                            <div class="block my-0.5">
+                                <label for="cb6">ยอดค้างชำระ ยกมา</label>
+                                <input type="text" name="outstanding_amount" id="cb6" class="ml-1 w-24 px-1 py-0.5 border border-gray-600 bg-gray-50 focus:outline-none focus:ring-1 focus:ring-blue-500" readonly>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Notes Section -->
+                <label class="flex gap-2 mb-1 p-1 items-center min-w-20">หมายเหตุ</label>
+                <div class="flex gap-2 mt-1 items-center">
+                    <input type="text" name="remark_1" class="flex-1 px-1 py-0.5 border border-gray-600 bg-gray-50 focus:outline-none focus:ring-1 focus:ring-blue-500" id="remark_1">
+                </div>
+                
+                <div class="flex gap-2 mb-1 items-center">
+                    <input type="text" name="textstamp" class="flex-1 px-1 py-0.5 border border-gray-600 bg-gray-50 focus:outline-none focus:ring-1 focus:ring-blue-500" id="textstamp">
+                </div>
+
+                <!-- Pagination Info -->
+                <div class="gradient-light-gray border-t border-gray-400 px-2 py-1 flex gap-1 items-center">
+                    <div class="hotkey-hint">
+                        <div class="ml-2 text-gray-600">
+                            <button type="submit">F2 เพิ่ม</button> | F3 แก้ไข | F4 ลบ | F5 ค้นหา | F6 พิมพ์ | F7 บันทึก | F8 ออก
+                        </div>
+                    </div>
+                </div>      
+        
+            </form>
+        </div>
+    </div>
+
+    <script>
+        // Load dictionary data from Django context
+        const dictionary_data = JSON.parse(`{{ item_data_json|safe|escapejs }}`);
+
+        // Handle item code input on Enter key
+        function handleItemCode(event, input) {
+            if (event.key === 'Enter') {
+                event.preventDefault();
+                const itemCode = input.value.trim();
+                const item = dictionary_data[itemCode];
+                const row = input.closest('tr');
+
+                if (item) {
+                    document.getElementById('description_table').value = item.description || '';
+                    // Leave rate and quantity empty for manual input
+                    document.getElementById('rate_table').value = '';
+                    document.getElementById('quantity_table').value = '';
+                    document.getElementById('amount_table').value = '';
+                    updateSummary();
+                } else {
+                    alert('ไม่พบรหัสสินค้า: ' + itemCode);
+                    document.getElementById('description_table').value = '';
+                    document.getElementById('rate_table').value = '';
+                    document.getElementById('quantity_table').value = '';
+                    document.getElementById('amount_table').value = '';
+                    updateSummary();
+                }
+            }
+        }
+
+        // Calculate amount when rate or quantity changes
+        function calculateAmount(input) {
+            const row = input.closest('tr');
+            const rate = parseFloat(document.getElementById('rate_table').value) || 0;
+            const quantity = parseFloat(document.getElementById('quantity_table').value) || 0;
+            document.getElementById('amount_table').value = (rate * quantity).toFixed(2);
+            updateSummary();
+        }
+
+        // Update summary fields
+        function updateSummary() {
+            const amount = parseFloat(document.getElementById('amount_table').value) || 0;
+            const itemCode = document.getElementById('item_code_table').value.trim();
+            const vatRate = 0.07; // 7% VAT
+
+            // Determine if item is subject to VAT (for simplicity, assume A101 is VAT-inclusive)
+            const isVatInclusive = itemCode === 'A101'; // Adjust logic as needed
+            const valueN = isVatInclusive ? 0 : amount; // Non-VAT amount
+            const valueV = isVatInclusive ? amount / (1 + vatRate) : 0; // VAT-inclusive base amount
+            const vat = isVatInclusive ? valueV * vatRate : 0; // VAT amount
+            const totalAmount = valueN + valueV + vat; // Total including VAT
+            const paidAmount = parseFloat(document.getElementById('cb5').value) || 0;
+            const outstandingAmount = totalAmount - paidAmount;
+
+            document.getElementById('cb1').value = valueN.toFixed(2); // มูลค่าสินค้า/บริการN
+            document.getElementById('cb2').value = valueV.toFixed(2); // มูลค่าสินค้า/บริการV
+            document.getElementById('cb3').value = vat.toFixed(2); // ภาษีมูลค่าเพิ่ม
+            document.getElementById('cb4').value = totalAmount.toFixed(2); // รวมเงินทั้งสิ้น
+            document.getElementById('cb5').value = paidAmount.toFixed(2); // ยอดชำระแล้ว (user input)
+            document.getElementById('cb6').value = outstandingAmount.toFixed(2); // ยอดค้างชำระ
+        }
+    </script>
+
+    <script>
+        // Global variables
+        let currentRecordId = null;
+        let formMode = 'view';
+        let selectedRow = null;
+
+        // Show message
+        function showMessage(message, type = 'success') {
+            const messageDiv = document.createElement('div');
+            messageDiv.className = `p-2 mb-2 rounded animate-slide-in ${
+                type === 'success' 
+                    ? 'bg-green-100 border border-green-300 text-green-800' 
+                    : 'bg-red-100 border border-red-300 text-red-800'
+            }`;
+            messageDiv.textContent = message;
+            
+            const container = document.getElementById('messages');
+            container.appendChild(messageDiv);
+            
+            // Auto remove after 3 seconds
+            setTimeout(() => {
+                if (messageDiv.parentNode) {
+                    messageDiv.parentNode.removeChild(messageDiv);
+                }
+            }, 3000);
+        }
+
+        // Set form mode - ฟังก์ชันสำคัญที่ควบคุมการเปิด/ปิดการแก้ไข
+        function setFormMode(mode) {
+            formMode = mode;
+            const inputs = document.querySelectorAll('#formSection input[type="text"], ' +
+                '#formSection input[type="date"], ' +
+                '#formSection input[type="number"]'
+            );
+            
+            if (mode === 'view') {
+                inputs.forEach(input => {
+                    input.disabled = true;
+                    if (['text', 'date', 'number'].includes(input.type)) {
+                        input.style.backgroundColor = '#f0f0f0';  // เทาอ่อน
+                    }
+                });
+            } else if (mode === 'edit' || mode === 'new') {
+                inputs.forEach(input => {
+                    input.disabled = false;
+                    if (['text', 'date', 'number'].includes(input.type)) {
+                        input.style.backgroundColor = '#ffffff';  // ขาว
+                    }
+                });
+            }
+        }
+
+        // Clear form
+        function clearForm() {
+            document.querySelectorAll('#formSection input[type="text"], #formSection input[type="date"], #formSection input[type="number"]').forEach(input => {
+                input.value = '';
+            });
+            currentRecordId = null;
+        }
+
+        // New record
+        function new_Record() {
+            console.log('newrecord...');
+            // Clear form
+            clearForm();
+            
+            // Set current date
+            const today = new Date();
+            document.getElementById('date').value = today.toISOString().split('T')[0];
+            document.getElementById('month').value = String(today.getMonth() + 1).padStart(2, '0');
+            document.getElementById('year').value = today.getFullYear();
+            
+            currentRecordId = null;
+            setFormMode('new');
+            
+            // Clear table selection
+            if (selectedRow) {
+                selectedRow.classList.remove('!bg-red-100');
+                selectedRow = null;
+            }
+        }
+
+        // Select record in table
+        function selectRecord(row, recordId) {
+            // Remove previous selection
+            if (selectedRow) {
+                selectedRow.classList.remove('!bg-red-100');
+            }
+            
+            // Add selection to clicked row
+            row.classList.add('!bg-red-100');
+            selectedRow = row;
+            
+            // Load record details
+            loadRecordDetails(recordId);
+        }
+
+        // Load record details from table row
+        function loadRecordDetails(recordId) {
+            const row = document.querySelector(`tr[data-id="${recordId}"]`);
+            if (!row) return;
+
+            const cells = row.cells;
+            
+            // Fill form with record data from table
+            document.getElementById('bill_no').value = cells[2].textContent;
+            document.getElementById('date').value = formatDateForInput(cells[1].textContent);
+            document.getElementById('month').value = cells[0].textContent;
+            document.getElementById('year').value = new Date().getFullYear(); // Default current year
+            document.getElementById('prd').value = cells[3].textContent;
+            
+            // Customer names
+            const customerCell = cells[4];
+            const customerText = customerCell.textContent.trim();
+            const customerLines = customerText.split('\n');
+            document.getElementById('member_1').value = customerLines[1] || '';
+            console.log(customerLines);
+            document.getElementById('member_2').value = customerLines[0] || '';
+            
+            document.getElementById('remark_1').value = cells[5].textContent === '-' ? '' : cells[5].textContent;
+            document.getElementById('textstamp').value = cells[6].textContent;
+            
+            currentRecordId = recordId;
+            setFormMode('view');  // เซ็ตเป็น view mode เมื่อเลือกแถว
+        }
+
+        // Format date for input field (DD/MM/YYYY to YYYY-MM-DD)
+        function formatDateForInput(dateStr) {
+            if (!dateStr || dateStr === '-') return '';
+            
+            const parts = dateStr.split('/');
+            if (parts.length === 3) {
+                const day = parts[0].padStart(2, '0');
+                const month = parts[1].padStart(2, '0');
+                const year = parts[2];
+                return `${year}-${month}-${day}`;
+            }
+            return '';
+        }
+
+        // Edit record
+        function editRecord() {
+            if (currentRecordId) {
+                setFormMode('edit');
+            } else {
+                showMessage('กรุณาเลือกข้อมูลที่ต้องการแก้ไข', 'error');
+            }
+        }
+
+        // Cancel edit
+        function cancelEdit() {
+            if (currentRecordId) {
+                loadRecordDetails(currentRecordId);
+            } else {
+                clearForm();
+                setFormMode('view');
+            }
+        }
+
+        function getCookie(name) {
+            let cookieValue = null;
+            if (document.cookie) {
+                const cookies = document.cookie.split(';');
+                for (let cookie of cookies) {
+                    cookie = cookie.trim();
+                    if (cookie.startsWith(name + '=')) {
+                        cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                        break;
+                    }
+                }
+            }
+            return cookieValue;
+        }
+
+        // Save record
+        function saveRecord() {
+            const formData = new FormData();
+            
+            // Collect form data
+            formData.append('bill_no', document.getElementById('bill_no').value);
+            formData.append('date', document.getElementById('date').value);
+            formData.append('month', document.getElementById('month').value);
+            formData.append('year', document.getElementById('year').value);
+            formData.append('prd', document.getElementById('prd').value);
+            formData.append('room_no_1', document.getElementById('room_no_1').value);
+            formData.append('room_no_2', document.getElementById('room_no_2').value);
+            formData.append('member_1', document.getElementById('member_1').value);
+            formData.append('member_2', document.getElementById('member_2').value);
+            formData.append('duedate', document.getElementById('duedate').value);
+            formData.append('remark_1', document.getElementById('remark_1').value);
+            formData.append('textstamp', document.getElementById('textstamp').value);
+
+            if (currentRecordId) {
+                formData.append('id', currentRecordId);
+            }
+
+            // Validate required fields
+            if (!formData.get('bill_no') || !formData.get('date') || !formData.get('member_1')) {
+                showMessage('กรุณากรอกข้อมูลที่จำเป็นให้ครบถ้วน', 'error');
+                return;
+            }
+
+            showLoading();
+            
+            // Simulate save (replace with actual AJAX call)
+            setTimeout(() => {
+                hideLoading();
+                showMessage(currentRecordId ? 'แก้ไขข้อมูลเรียบร้อยแล้ว' : 'บันทึกข้อมูลเรียบร้อยแล้ว', 'success');
+                
+                if (!currentRecordId) {
+                    // Refresh page for new record
+                    setTimeout(() => {
+                        window.location.reload();
+                    }, 1000);
+                } else {
+                    setFormMode('view');
+                }
+            }, 1000);
+        }
+
+        // Delete record
+        function deleteRecord() {
+            if (!currentRecordId) {
+                showMessage('กรุณาเลือกข้อมูลที่ต้องการลบ', 'error');
+                return;
+            }
+
+            if (!confirm('คุณแน่ใจหรือไม่ที่จะลบข้อมูลนี้?')) {
+                return;
+            }
+
+            showLoading();
+            
+            // Simulate delete (replace with actual AJAX call)
+            setTimeout(() => {
+                hideLoading();
+                showMessage('ลบข้อมูลเรียบร้อยแล้ว', 'success');
+                
+                // Remove row from table
+                if (selectedRow) {
+                    selectedRow.remove();
+                    selectedRow = null;
+                }
+                
+                clearForm();
+                setFormMode('view');
+            }, 1000);
+        }
+
+        // Print report
+        function printReport() {
+            window.print();
+        }
+
+        // Show loading
+        function showLoading() {
+            document.getElementById('loading').classList.remove('hidden');
+        }
+
+        // Hide loading
+        function hideLoading() {
+            document.getElementById('loading').classList.add('hidden');
+        }
+
+        // Keyboard shortcuts
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'F2') {
+                e.preventDefault();
+                new_Record();
+            } else if (e.key === 'F3') {
+                e.preventDefault();
+                editRecord();
+            } else if (e.key === 'F4') {
+                e.preventDefault();
+                deleteRecord();
+            } else if (e.key === 'F5') {
+                e.preventDefault();
+                const searchInput = document.querySelector('input[name="search"]');
+                if (searchInput) searchInput.focus();
+            } else if (e.key === 'F6') {
+                e.preventDefault();
+                printReport();
+            } else if (e.key === 'F7') {
+                e.preventDefault();
+                if (confirm('ต้องการออกจากโปรแกรมหรือไม่?')) {
+                    window.close();
+                }
+            } else if (e.ctrlKey && e.key === 's') {
+                e.preventDefault();
+                if (formMode === 'edit' || formMode === 'new') {
+                    saveRecord();
+                }
+            } else if (e.key === 'Escape') {
+                e.preventDefault();
+                if (formMode === 'edit' || formMode === 'new') {
+                    cancelEdit();
+                }
+            } else if (e.key === 'F10') {
+                e.preventDefault();
+                saveRecord();
+            }
+        });
+
+        // Auto-fill month and year when date changes
+        document.getElementById('date').addEventListener('change', function() {
+            const date = new Date(this.value);
+            if (!isNaN(date.getTime())) {
+                document.getElementById('month').value = String(date.getMonth() + 1).padStart(2, '0');
+                document.getElementById('year').value = date.getFullYear();
+                
+                // Auto set due date to next month
+                const dueDate = new Date(date);
+                dueDate.setMonth(dueDate.getMonth() + 1);
+                document.getElementById('duedate').value = dueDate.toISOString().split('T')[0];
+            }
+        });
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', function() {
+            setFormMode('view');
+            
+            // Select first row if exists
+            const firstRow = document.querySelector('#dataTable tr[data-id]');
+            if (firstRow) {
+                const recordId = firstRow.getAttribute('data-id');
+                selectRecord(firstRow, recordId);
+            }
+        });
+    </script>
+{% endblock %}

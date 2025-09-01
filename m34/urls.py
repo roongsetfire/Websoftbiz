@@ -1,9 +1,9 @@
 
 from django.urls import path
-from . import views
+from .views import *
 
 
 urlpatterns = [
-    path("", views.m34, name="m34-page"),
+    path("", m34, name="m34-page"),
 
 ]

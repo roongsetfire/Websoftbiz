@@ -25,9 +25,7 @@ class CmtArtr(models.Model):
 
     duedate = models.DateField(verbose_name="ชำระภายในวันที่")
     remark_1 = models.TextField(blank=True, null=True, verbose_name="หมายเหตุ 1")
-    textstamp = models.CharField(
-        max_length=50, blank=True, null=True, verbose_name="หมายเหตุ 2"
-    )
+    remark_2 = models.CharField(blank=True, null=True, verbose_name="หมายเหตุ 2")
 
     # Summary fields
     total_before_vat = models.DecimalField(
@@ -80,22 +78,9 @@ class CmtArtr(models.Model):
 
 
 class CmtArtrItem(models.Model):
-    # bill = models.ForeignKey(
-    #     CmtArtr,
-    #     on_delete=models.CASCADE,
-    #     related_name="bill_items",
-    #     verbose_name="เลขที่บิลล์",
-    # )
-    row_number = models.PositiveIntegerField(verbose_name="หมายเลขแถว")
-    room_no = models.CharField(
-        max_length=10, default='-', verbose_name="หมายเลขห้อง"
-    )
-    m_y_prd = models.CharField(
-        max_length=20, default='-', verbose_name="เดือน/ปี/งวด"
-    )
-    bill_no = models.CharField(
-        max_length=20, default='-', verbose_name="เลขที่บิลล์"
-    )
+    room_no = models.CharField(max_length=10, default="-", verbose_name="หมายเลขห้อง")
+    m_y_prd = models.CharField(max_length=20, default="-", verbose_name="เดือน/ปี/งวด")
+    bill_no = models.CharField(max_length=20, default="-", verbose_name="เลขที่บิลล์")
     item_code = models.CharField(
         max_length=50, blank=True, null=True, verbose_name="รหัส"
     )
@@ -115,15 +100,14 @@ class CmtArtrItem(models.Model):
     created_at = models.DateTimeField(default=timezone.now, verbose_name="เวลาสร้าง")
 
     textstamp = models.CharField(
-        max_length=50, default='unpaid', verbose_name="ตรวจสอบการชำระบิล"
+        max_length=50, default="unpaid", verbose_name="ตรวจสอบการชำระบิล"
     )
 
     class Meta:
         db_table = "CMT_ARTR_ITEM"
         verbose_name = "รายการใบแจ้งหนี้"
         verbose_name_plural = "รายการใบแจ้งหนี้ทั้งหมด"
-        ordering = ["row_number"]
-        unique_together = [["row_number"]]
+        ordering = ["created_at"]  # เปลี่ยนจาก row_number เป็น created_at
 
     def save(self, *args, **kwargs):
         # คำนวณยอดเงินอัตโนมัติ
@@ -131,4 +115,4 @@ class CmtArtrItem(models.Model):
         super().save(*args, **kwargs)
 
     def __str__(self):
-        return f"{self.bill_no} - แถว {self.row_number}"
+        return f"{self.bill_no} - {self.item_code}"  # เปลี่ยนจาก row_number
