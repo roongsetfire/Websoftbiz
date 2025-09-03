@@ -46,6 +46,15 @@
             counter-increment: rowNumber;
             content: counter(rowNumber) ".";
         }
+        #dataTable1 {
+            counter-reset: rowNumber;
+        }
+
+        #dataTable1 .row-number::before {
+            counter-increment: rowNumber;
+            content: counter(rowNumber) ".";
+        }
+        
         #formSection tbody input {
             width: 100%;
             height: 1.8rem;
@@ -249,32 +258,32 @@
                                     <th class="gradient-light-gray border border-gray-600 px-2 py-1 font-bold sticky top-0 z-10 w-14">เป็นเงิน</th>
                                 </tr>
                             </thead>
-                            <tbody id="dataTable">
+                            <tbody id="dataTable1">
                                 {% for i in row_numbers %}
                                 <tr class="cursor-pointer even:bg-gray-50 border-b border-gray-200">
                                     <td class="border border-gray-300 py-1 text-center row-number"></td>
                                     <td class="px-2 py-1 whitespace-nowrap">
-                                        <input type="text" name="item_code" id="item_code_table" value="" 
-                                               class="w-full px-1 py-0.5 border border-gray-300 bg-gray-50 focus:outline-none focus:ring-1 focus:ring-blue-500 item-code"
+                                        <input type="text" name="item_code[]" id="item_code_table" value="" 
+                                               class="item_code w-full px-1 py-0.5 border border-gray-300 bg-gray-50 focus:outline-none focus:ring-1 focus:ring-blue-500 item-code"
                                                onkeypress="handleItemCode(event, this)">
                                     </td>
                                     <td class="px-2 py-1 whitespace-nowrap">
-                                        <input type="text" name="description" id="description_table" value="" 
-                                               class="w-full px-1 py-0.5 border border-gray-300 bg-gray-50 focus:outline-none focus:ring-1 focus:ring-blue-500 description">
+                                        <input type="text" name="description[]" id="description_table" value="" 
+                                               class="description w-full px-1 py-0.5 border border-gray-300 bg-gray-50 focus:outline-none focus:ring-1 focus:ring-blue-500 description">
                                     </td>
                                     <td class="px-2 py-1 whitespace-nowrap">
-                                        <input type="number" name="rate" id="rate_table" value="" 
-                                               class="w-full px-1 py-0.5 border border-gray-300 bg-gray-50 focus:outline-none focus:ring-1 focus:ring-blue-500 rate" 
+                                        <input type="number" name="rate[]" id="rate_table" value="" 
+                                               class="rate w-full px-1 py-0.5 border border-gray-300 bg-gray-50 focus:outline-none focus:ring-1 focus:ring-blue-500 rate" 
                                                onchange="calculateAmount(this)">
                                     </td>
                                     <td class="px-2 py-1 whitespace-nowrap">
-                                        <input type="number" name="quantity" id="quantity_table" value="" 
-                                               class="w-full px-1 py-0.5 border border-gray-300 bg-gray-50 focus:outline-none focus:ring-1 focus:ring-blue-500 quantity" 
+                                        <input type="number" name="quantity[]" id="quantity_table" value="" 
+                                               class="quantity w-full px-1 py-0.5 border border-gray-300 bg-gray-50 focus:outline-none focus:ring-1 focus:ring-blue-500 quantity" 
                                                onchange="calculateAmount(this)">
                                     </td>
                                     <td class="px-2 py-1 text-center whitespace-nowrap">
-                                        <input type="text" name="amount" id="amount_table" value="" 
-                                               class="w-full px-1 py-0.5 border border-gray-300 bg-gray-50 text-center" readonly>
+                                        <input type="text" name="amount[]" id="amount_table" value="" 
+                                               class="amount w-full px-1 py-0.5 border border-gray-300 bg-gray-50 text-center" readonly>
                                     </td>
                                 </tr>
                                 {% endfor %}
@@ -342,23 +351,22 @@
         function handleItemCode(event, input) {
             if (event.key === 'Enter') {
                 event.preventDefault();
+                const row = input.closest('tr'); // หาแถวปัจจุบัน
                 const itemCode = input.value.trim();
                 const item = dictionary_data[itemCode];
-                const row = input.closest('tr');
 
                 if (item) {
-                    document.getElementById('description_table').value = item.description || '';
-                    // Leave rate and quantity empty for manual input
-                    document.getElementById('rate_table').value = '';
-                    document.getElementById('quantity_table').value = '';
-                    document.getElementById('amount_table').value = '';
+                    row.querySelector('.description').value = item.description || '';
+                    row.querySelector('.rate').value = item.rate || '';
+                    // row.querySelector('.quantity').value = item.quantity || '';
+                    // row.querySelector('.amount').value = (parseFloat(item.rate) * parseFloat(item.quantity)).toFixed(2);
                     updateSummary();
                 } else {
                     alert('ไม่พบรหัสสินค้า: ' + itemCode);
-                    document.getElementById('description_table').value = '';
-                    document.getElementById('rate_table').value = '';
-                    document.getElementById('quantity_table').value = '';
-                    document.getElementById('amount_table').value = '';
+                    row.querySelector('.description').value = '';
+                    row.querySelector('.rate').value = '';
+                    row.querySelector('.quantity').value = '';
+                    row.querySelector('.amount').value = '';
                     updateSummary();
                 }
             }
@@ -366,34 +374,47 @@
 
         // Calculate amount when rate or quantity changes
         function calculateAmount(input) {
-            const row = input.closest('tr');
-            const rate = parseFloat(document.getElementById('rate_table').value) || 0;
-            const quantity = parseFloat(document.getElementById('quantity_table').value) || 0;
-            document.getElementById('amount_table').value = (rate * quantity).toFixed(2);
+            const row = input.closest('tr'); // Find the current row
+            const rate = parseFloat(row.querySelector('.rate').value) || 0;
+            const quantity = parseFloat(row.querySelector('.quantity').value) || 0;
+            row.querySelector('.amount').value = (rate * quantity).toFixed(2);
             updateSummary();
         }
 
         // Update summary fields
         function updateSummary() {
-            const amount = parseFloat(document.getElementById('amount_table').value) || 0;
-            const itemCode = document.getElementById('item_code_table').value.trim();
-            const vatRate = 0.07; // 7% VAT
+            const rows = document.querySelectorAll('#dataTable1 tr');
+            let totalAmount = 0;
+            let valueN = 0;
+            let valueV = 0;
+            let vat = 0;
+            const vatRate = 0.07;
 
-            // Determine if item is subject to VAT (for simplicity, assume A101 is VAT-inclusive)
-            const isVatInclusive = itemCode === 'A101'; // Adjust logic as needed
-            const valueN = isVatInclusive ? 0 : amount; // Non-VAT amount
-            const valueV = isVatInclusive ? amount / (1 + vatRate) : 0; // VAT-inclusive base amount
-            const vat = isVatInclusive ? valueV * vatRate : 0; // VAT amount
-            const totalAmount = valueN + valueV + vat; // Total including VAT
+            rows.forEach(row => {
+                const itemCode = row.querySelector('#item_code_table')?.value.trim();
+                const amount = parseFloat(row.querySelector('#amount_table')?.value) || 0;
+                if (!itemCode) return;
+
+                const isVatInclusive = itemCode === 'A101';
+                if (isVatInclusive) {
+                    const base = amount / (1 + vatRate);
+                    valueV += base;
+                    vat += base * vatRate;
+                } else {
+                    valueN += amount;
+                }
+                totalAmount += amount;
+            });
+
             const paidAmount = parseFloat(document.getElementById('cb5').value) || 0;
             const outstandingAmount = totalAmount - paidAmount;
 
-            document.getElementById('cb1').value = valueN.toFixed(2); // มูลค่าสินค้า/บริการN
-            document.getElementById('cb2').value = valueV.toFixed(2); // มูลค่าสินค้า/บริการV
-            document.getElementById('cb3').value = vat.toFixed(2); // ภาษีมูลค่าเพิ่ม
-            document.getElementById('cb4').value = totalAmount.toFixed(2); // รวมเงินทั้งสิ้น
-            document.getElementById('cb5').value = paidAmount.toFixed(2); // ยอดชำระแล้ว (user input)
-            document.getElementById('cb6').value = outstandingAmount.toFixed(2); // ยอดค้างชำระ
+            document.getElementById('cb1').value = valueN.toFixed(2);
+            document.getElementById('cb2').value = valueV.toFixed(2);
+            document.getElementById('cb3').value = vat.toFixed(2);
+            document.getElementById('cb4').value = totalAmount.toFixed(2);
+            document.getElementById('cb5').value = paidAmount.toFixed(2);
+            document.getElementById('cb6').value = outstandingAmount.toFixed(2);
         }
     </script>
 
@@ -429,8 +450,10 @@
             formMode = mode;
             // เพิ่ม selector ให้ครอบคลุมทุกฟิลด์ที่ต้องการ
             const inputs = document.querySelectorAll('#formSection input[type="text"], ' +
+                '#formSection input[type="text"], ' +
                 '#formSection input[type="date"], ' +
-                '#formSection input[type="number"]'
+                '#formSection input[type="number"], ' +
+                '#dataTable1 input'
             );
             
             console.log('Setting form mode to:', mode);
@@ -561,16 +584,53 @@
                     document.getElementById('remark_1').value = record.remark_1 || '';
                     document.getElementById('remark_2').value = record.remark_2 || '';
                     
-                    // ใส่ข้อมูลรายการสินค้าในตาราง
-                    document.getElementById('item_code_table').value = record.item_code || '';
-                    document.getElementById('description_table').value = record.description || '';
-                    document.getElementById('rate_table').value = record.rate || '';
-                    document.getElementById('quantity_table').value = record.quantity || '';
-                    document.getElementById('amount_table').value = record.amount || '';
+                    // 🔥 ใส่ข้อมูลรายการสินค้าในตาราง (หลายแถว)
+                    const tbody = document.getElementById('dataTable1');
+                    tbody.innerHTML = ''; // ล้างของเก่าออกก่อน
+
+                    let items = record.items || [];
+                    let totalRows = 8; // ต้องการแสดง 8 แถวเสมอ
+
+                    for (let i = 0; i < totalRows; i++) {
+                        const item = items[i] || {}; // ถ้าไม่มีข้อมูล ใช้ object ว่าง
+                        const row = document.createElement('tr');
+                        row.className = "cursor-pointer even:bg-gray-50 border-b border-gray-200";
+
+                        row.innerHTML = `
+                            <td class="border border-gray-300 py-1 text-center">${i + 1}</td>
+                            <td>
+                                <input type="text" name="item_code[]" value="${item.item_code || ''}" 
+                                    class="item_code w-full border px-1"
+                                    onkeypress="handleItemCode(event, this)">
+                            </td>
+                            <td>
+                                <input type="text" name="description[]" value="${item.description || ''}" 
+                                    class="description w-full border px-1">
+                            </td>
+                            <td>
+                                <input type="number" name="rate[]" value="${item.rate || ''}" 
+                                    class="rate w-full border px-1" 
+                                    onchange="calculateAmount(this)">
+                            </td>
+                            <td>
+                                <input type="number" name="quantity[]" value="${item.quantity || ''}" 
+                                    class="quantity w-full border px-1" 
+                                    onchange="calculateAmount(this)">
+                            </td>
+                            <td>
+                                <input type="text" name="amount[]" value="${item.amount || ''}" 
+                                    class="amount w-full border px-1 text-center" readonly>
+                            </td>
+                        `;
+
+                        tbody.appendChild(row);
+                    }
                     
                     // คำนวณ VAT ใหม่หลังจากใส่ข้อมูล
                     updateSummary();
                     
+                    setFormMode('view');
+
                     console.log('Loaded complete record from database:', record);
                 } else {
                     // ถ้า AJAX ไม่สำเร็จ ให้ใช้วิธีเดิมจากตาราง
@@ -584,7 +644,7 @@
             });
             
             currentRecordId = recordId;
-            setFormMode('view');
+            
         }
         
         // ฟังก์ชันสำรองดึงข้อมูลจากตาราง (วิธีเดิม) - ใช้เมื่อ AJAX ไม่ทำงาน
@@ -693,11 +753,14 @@
             formData.append('remark_2', document.getElementById('remark_2').value);
 
             // Add item data from table
-            formData.append('item_code', document.getElementById('item_code_table').value);
-            formData.append('description', document.getElementById('description_table').value);
-            formData.append('rate', document.getElementById('rate_table').value);
-            formData.append('quantity', document.getElementById('quantity_table').value);
-            formData.append('amount', document.getElementById('amount_table').value);
+            // --- เก็บข้อมูล item หลายแถว ---
+            document.querySelectorAll('#dataTable1 tr').forEach(row => {
+                formData.append('item_code[]', row.querySelector('.item_code').value);
+                formData.append('description[]', row.querySelector('.description').value);
+                formData.append('rate[]', row.querySelector('.rate').value);
+                formData.append('quantity[]', row.querySelector('.quantity').value);
+                formData.append('amount[]', row.querySelector('.amount').value);
+            });
             
             // Add calculated values
             formData.append('value_n', document.getElementById('cb1').value);
