@@ -753,12 +753,14 @@
         }
 
         // Delete record
+        // Delete record - Updated version with better error handling
         function deleteRecord() {
             if (!currentRecordId) {
                 showMessage('กรุณาเลือกข้อมูลที่ต้องการลบ', 'error');
                 return;
             }
 
+            // Show confirmation dialog
             if (!confirm('คุณแน่ใจหรือไม่ที่จะลบข้อมูลนี้?')) {
                 return;
             }
@@ -769,20 +771,43 @@
             const formData = new FormData();
             formData.append('action', 'delete');
             formData.append('id', currentRecordId);
+            formData.append('csrfmiddlewaretoken', getCookie('csrftoken'));
             
             fetch('/m34/', {
                 method: 'POST',
                 headers: {
                     'X-CSRFToken': getCookie('csrftoken'),
+                    'X-Requested-With': 'XMLHttpRequest',
                 },
                 body: formData
             })
             .then(response => {
+                console.log('Delete response status:', response.status);
+                console.log('Delete response content-type:', response.headers.get('content-type'));
+                
                 hideLoading();
-                if (!response.ok) throw new Error('เกิดข้อผิดพลาดจาก server');
+                
+                if (!response.ok) {
+                    return response.text().then(text => {
+                        console.error('Delete error response:', text);
+                        throw new Error(`Server error: ${response.status}`);
+                    });
+                }
+                
+                // Check if response is JSON
+                const contentType = response.headers.get('content-type');
+                if (!contentType || !contentType.includes('application/json')) {
+                    return response.text().then(text => {
+                        console.error('Expected JSON but got:', text);
+                        throw new Error('Server returned HTML instead of JSON - check Django view');
+                    });
+                }
+                
                 return response.json();
             })
             .then(data => {
+                console.log('Delete response data:', data);
+                
                 if (data.status === 'success') {
                     showMessage(data.message || 'ลบข้อมูลเรียบร้อยแล้ว', 'success');
                     
@@ -792,17 +817,85 @@
                         selectedRow = null;
                     }
                     
+                    // Clear form and reset
                     clearForm();
                     setFormMode('view');
+                    currentRecordId = null;
+                    
+                    // Optionally reload page to refresh data
+                    setTimeout(() => {
+                        window.location.reload();
+                    }, 1000);
+                    
                 } else {
                     showMessage(data.message || 'เกิดข้อผิดพลาดในการลบข้อมูล', 'error');
                 }
             })
             .catch(error => {
+                console.error('Delete error:', error);
                 hideLoading();
-                showMessage(error.message || 'เกิดข้อผิดพลาดในการติดต่อ server', 'error');
+                showMessage(`เกิดข้อผิดพลาด: ${error.message}`, 'error');
             });
         }
+
+        // Enhanced getCookie function
+        function getCookie(name) {
+            let cookieValue = null;
+            if (document.cookie && document.cookie !== '') {
+                const cookies = document.cookie.split(';');
+                for (let i = 0; i < cookies.length; i++) {
+                    const cookie = cookies[i].trim();
+                    if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                        cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                        break;
+                    }
+                }
+            }
+            return cookieValue;
+        }
+
+        // Also update the keyboard shortcut handler to ensure F4 works
+        document.addEventListener('keydown', function(e) {
+            // Prevent default browser behavior for function keys
+            if (['F1', 'F2', 'F3', 'F4', 'F5', 'F6', 'F7', 'F8', 'F9', 'F10', 'F11', 'F12'].includes(e.key)) {
+                e.preventDefault();
+            }
+            
+            switch(e.key) {
+                case 'F2':
+                    new_Record();
+                    break;
+                case 'F3':
+                    editRecord();
+                    break;
+                case 'F4':
+                    deleteRecord();
+                    break;
+                case 'F5':
+                    const searchInput = document.querySelector('input[name="search"]');
+                    if (searchInput) searchInput.focus();
+                    break;
+                case 'F6':
+                    printReport();
+                    break;
+                case 'F10':
+                    saveRecord();
+                    break;
+                case 'Escape':
+                    if (formMode === 'edit' || formMode === 'new') {
+                        cancelEdit();
+                    }
+                    break;
+            }
+            
+            // Ctrl+S for save
+            if (e.ctrlKey && e.key === 's') {
+                e.preventDefault();
+                if (formMode === 'edit' || formMode === 'new') {
+                    saveRecord();
+                }
+            }
+        });
 
         // Print report
         function printReport() {

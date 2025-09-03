@@ -123,6 +123,23 @@ def m34(request):
             )
         except CmtArtr.DoesNotExist:
             return JsonResponse({"status": "error", "message": "Record not found"})
+    if request.method == "POST":
+        action = request.POST.get("action")
+
+        if action == "delete":
+            record_id = request.POST.get("id")
+            try:
+                record = CmtArtr.objects.get(id=record_id)
+                record.delete()
+                return JsonResponse(
+                    {"status": "success", "message": "ลบข้อมูลเรียบร้อยแล้ว"}
+                )
+            except CmtArtr.DoesNotExist:
+                return JsonResponse({"status": "error", "message": "ไม่พบข้อมูลที่ต้องการลบ"})
+            except Exception as e:
+                return JsonResponse(
+                    {"status": "error", "message": f"เกิดข้อผิดพลาด: {str(e)}"}
+                )
 
     # ถ้าเป็น AJAX POST request
     if (
