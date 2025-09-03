@@ -277,6 +277,7 @@ def m34(request):
     }
 
     context = {
+        'row_numbers': range(1, 9),
         "form": form,
         "cmt_artr": page_obj,  # ใช้ page_obj แทน cmt_artr
         "page_obj": page_obj,

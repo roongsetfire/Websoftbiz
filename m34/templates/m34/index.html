@@ -37,6 +37,30 @@
             gap: 3px;
             margin-bottom: 8px;
         }
+        /* ใช้เฉพาะตารางที่มี id="dataTable" */
+        #dataTable {
+            counter-reset: rowNumber;
+        }
+
+        #dataTable .row-number::before {
+            counter-increment: rowNumber;
+            content: counter(rowNumber) ".";
+        }
+        #formSection tbody input {
+            width: 100%;
+            height: 1.8rem;
+            font-size: 0.88rem;
+            padding: 0 10px;           /* เล็กนิดหน่อยเฉพาะด้านใน */
+            margin: 0;                /* ตัด margin ออก */
+            border: none;             /* ไม่ใช้ border ของ input เอง */
+            box-sizing: border-box;   /* คำนวณรวมขอบ */
+            background-color: transparent !important;
+        }
+        #formSection tbody td {
+            border: 1px solid #999; /* หรือ #ccc */
+            padding: 0;
+        }
+        
     </style>
 
     <!-- Loading Indicator -->
@@ -148,73 +172,63 @@
         <!-- Right Panel (50% width) -->
         <div class="flex-1 bg-green-100 flex flex-col">
             <!-- Form Section -->
-            <form method="POST" action="" id="formSection" class="bg-green-100 m-1 mb-1">
+            <form method="POST" action="" id="formSection" class="bg-green-100 mb-0">
                 {% csrf_token %}
-                <div class="p-1">
+                <div class="ml-10 mt-4 mb-2">
                     <div class="flex items-center gap-1 mb-0.5">
-                        <div class="flex-1">
-                            <div class="flex items-center gap-1">
-                                <label class="w-28 flex-shrink-0">เลขที่ใบแจ้งหนี้</label>
-                                <input type="text" name="bill_no" class="w-32 px-1 py-0.5 border border-gray-600 bg-gray-50 focus:outline-none focus:ring-1 focus:ring-blue-500" id="bill_no">
-                            </div>
+                        
+                        <div class="flex items-center gap-1">
+                            <label class="w-28 flex-shrink-0">เลขที่ใบแจ้งหนี้</label>
+                            <input type="text" name="bill_no" class="w-32 px-1 py-0.5 border border-gray-600 bg-gray-50 focus:outline-none focus:ring-1 focus:ring-blue-500" id="bill_no">
                         </div>
-                        <div class="flex-1">
-                            <div class="flex items-center gap-1">
-                                <label class="w-8 flex-shrink-0">วันที่</label>
-                                <input type="date" name="date" class="w-28 px-1 py-0.5 border border-gray-600 bg-gray-50 focus:outline-none focus:ring-1 focus:ring-blue-500" id="date">
-                                <button type="button" class="gradient-gray border border-gray-600 px-2 py-0.5 cursor-pointer hover:bg-gray-300 ml-1" onclick="printReport()">REPORT</button>
-                            </div>
+                        
+                        
+                        <div class="flex items-center gap-1">
+                            <label class="w-8 flex-shrink-0 ml-6">วันที่</label>
+                            <input type="date" name="date" class="w-32 px-1 py-0.5 border border-gray-600 bg-gray-50 focus:outline-none focus:ring-1 focus:ring-blue-500" id="date">
+                            <!-- <button type="button" class="gradient-gray border border-gray-600 px-2 py-0.5 cursor-pointer hover:bg-gray-300 ml-1" onclick="printReport()">REPORT</button> -->
                         </div>
+                        
                     </div>
                     
                     <div class="flex items-center gap-1 mb-0.5">
-                        <div class="flex-1">
+                        
                             <div class="flex items-center gap-1">
-                                <label class="w-28 flex-shrink-0">ประจำเดือน</label>
+                                <label class="w-28 flex-shrink-0 px-5">ประจำเดือน</label>
                                 <input type="text" name="month" class="w-8 px-1 py-0.5 border border-gray-600 bg-gray-50 focus:outline-none focus:ring-1 focus:ring-blue-500" id="month">
-                                <label class="mx-1">ปี</label>
+                                <label class="mx-1 ml-[1.7rem]">ปี</label>
                                 <input type="text" name="year" class="w-12 px-1 py-0.5 border border-gray-600 bg-gray-50 focus:outline-none focus:ring-1 focus:ring-blue-500" id="year">
                             </div>
-                        </div>
+                        
                         <div class="flex-1">
                             <div class="flex items-center gap-1">
-                                <label class="w-8 flex-shrink-0">งวด</label>
-                                <input type="text" name="prd" class="w-16 px-1 py-0.5 border border-gray-600 bg-gray-50 focus:outline-none focus:ring-1 focus:ring-blue-500" id="prd">
+                                <label class="w-8 flex-shrink-0 ml-6">งวด</label>
+                                <input type="text" name="prd" class="w-8 px-1 py-0.5 border border-gray-600 bg-gray-50 focus:outline-none focus:ring-1 focus:ring-blue-500" id="prd">
                             </div>
                         </div>
                     </div>
                     
                     <div class="flex items-center gap-1 mb-0.5">
-                        <div class="flex-1">
-                            <div class="flex items-center gap-1">
-                                <label class="w-28 flex-shrink-0">เลขห้องที่</label>
-                                <input type="text" name="room_no_1" class="w-32 px-1 py-0.5 border border-gray-600 bg-gray-50 focus:outline-none focus:ring-1 focus:ring-blue-500" id="room_no_1">
-                            </div>
-                        </div>
-                        <div class="flex-1">
-                            <div class="flex items-center gap-1">
-                                <input type="text" name="room_no_2" class="w-48 px-1 py-0.5 border border-gray-600 bg-gray-50 focus:outline-none focus:ring-1 focus:ring-blue-500 ml-9" id="room_no_2">
-                            </div>
-                        </div>
+                        
+                        <div class="flex items-center gap-1">
+                            <label class="w-28 flex-shrink-0">เลขที่ห้อง</label>
+                            <input type="text" name="room_no_1" class="w-32 px-1 py-0.5 border border-gray-600 bg-gray-50 focus:outline-none focus:ring-1 focus:ring-blue-500" id="room_no_1">
+                            <input type="text" name="room_no_2" class="w-60 px-1 py-0.5 border border-gray-600 bg-gray-50 focus:outline-none focus:ring-1 focus:ring-blue-500" id="room_no_2">
+                        </div>      
                     </div>
                     
                     <div class="flex items-center gap-1 mb-0.5">
-                        <div class="flex-1">
-                            <div class="flex items-center gap-1">
-                                <label class="w-28 flex-shrink-0">รหัส-ชื่อ</label>
-                                <input type="text" name="member_1" class="w-32 px-1 py-0.5 border border-gray-600 bg-gray-50 focus:outline-none focus:ring-1 focus:ring-blue-500" id="member_1">
-                            </div>
-                        </div>
-                        <div class="flex-1">
-                            <div class="flex items-center gap-1">
-                                <input type="text" name="member_2" class="w-48 px-1 py-0.5 border border-gray-600 bg-gray-50 focus:outline-none focus:ring-1 focus:ring-blue-500 ml-9" id="member_2">
-                            </div>
-                        </div>
+                        
+                        <div class="flex items-center gap-1">
+                            <label class="w-28 flex-shrink-0">รหัส-ชื่อ</label>
+                            <input type="text" name="member_1" class="w-32 px-1 py-0.5 border border-gray-600 bg-gray-50 focus:outline-none focus:ring-1 focus:ring-blue-500" id="member_1">
+                            <input type="text" name="member_2" class="w-96 px-1 py-0.5 border border-gray-600 bg-gray-50 focus:outline-none focus:ring-1 focus:ring-blue-500" id="member_2">
+                        </div>   
                     </div>
                     
                     <div class="flex items-center gap-1 mb-0.5">
                         <label class="w-28 flex-shrink-0">ชำระภายในวันที่</label>
-                        <input type="date" name="duedate" class="w-28 px-1 py-0.5 border border-gray-600 bg-gray-50 focus:outline-none focus:ring-1 focus:ring-blue-500" id="duedate">
+                        <input type="date" name="duedate" class="w-32 px-1 py-0.5 border border-gray-600 bg-gray-50 focus:outline-none focus:ring-1 focus:ring-blue-500" id="duedate">
                     </div>
                     
                     <input type="hidden" name="currentRecordId" id="currentRecordId" value="">
@@ -222,20 +236,23 @@
                 </div>
 
                 <!-- Task List -->
-                <div class="bg-white m-1 border border-gray-400 flex-1 flex flex-col mb-1">
-                    <div class="flex-1 overflow-auto border border-gray-400 m-1">
-                        <table class="w-full border-collapse">
+                <div class="bg-green-100 flex-1 flex flex-col">
+                    <div class="bg-white flex-1 overflow-auto border border-gray-400 mx-2">
+                        <table class="w-full border-collapse table-fixed">
                             <thead>
                                 <tr>
-                                    <th class="gradient-light-gray border border-gray-600 px-2 py-1 font-bold sticky top-0 z-10 w-20">รหัส</th>
-                                    <th class="gradient-light-gray border border-gray-600 px-2 py-1 font-bold sticky top-0 z-10 w-20">รายการ</th>
-                                    <th class="gradient-light-gray border border-gray-600 px-2 py-1 font-bold sticky top-0 z-10 w-20">อัตรา-F12</th>
-                                    <th class="gradient-light-gray border border-gray-600 px-2 py-1 font-bold sticky top-0 z-10 w-20">จำนวน</th>
-                                    <th class="gradient-light-gray border border-gray-600 px-2 py-1 font-bold sticky top-0 z-10 w-32">เป็นเงิน</th>
+                                    <th class="gradient-light-gray border border-gray-600 py-1 font-bold sticky top-0 z-10 w-4">ลำดับ</th>
+                                    <th class="gradient-light-gray border border-gray-600 px-2 py-1 font-bold sticky top-0 z-10 w-7">รหัส</th>
+                                    <th class="gradient-light-gray border border-gray-600 px-2 py-1 font-bold sticky top-0 z-10 w-32">รายการ</th>
+                                    <th class="gradient-light-gray border border-gray-600 px-2 py-1 font-bold sticky top-0 z-10 w-10">อัตรา-F12</th>
+                                    <th class="gradient-light-gray border border-gray-600 px-2 py-1 font-bold sticky top-0 z-10 w-10">จำนวน</th>
+                                    <th class="gradient-light-gray border border-gray-600 px-2 py-1 font-bold sticky top-0 z-10 w-14">เป็นเงิน</th>
                                 </tr>
                             </thead>
                             <tbody id="dataTable">
+                                {% for i in row_numbers %}
                                 <tr class="cursor-pointer even:bg-gray-50 border-b border-gray-200">
+                                    <td class="border border-gray-300 py-1 text-center row-number"></td>
                                     <td class="px-2 py-1 whitespace-nowrap">
                                         <input type="text" name="item_code" id="item_code_table" value="" 
                                                class="w-full px-1 py-0.5 border border-gray-300 bg-gray-50 focus:outline-none focus:ring-1 focus:ring-blue-500 item-code"
@@ -248,30 +265,35 @@
                                     <td class="px-2 py-1 whitespace-nowrap">
                                         <input type="number" name="rate" id="rate_table" value="" 
                                                class="w-full px-1 py-0.5 border border-gray-300 bg-gray-50 focus:outline-none focus:ring-1 focus:ring-blue-500 rate" 
-                                               step="0.01" onchange="calculateAmount(this)">
+                                               onchange="calculateAmount(this)">
                                     </td>
                                     <td class="px-2 py-1 whitespace-nowrap">
                                         <input type="number" name="quantity" id="quantity_table" value="" 
                                                class="w-full px-1 py-0.5 border border-gray-300 bg-gray-50 focus:outline-none focus:ring-1 focus:ring-blue-500 quantity" 
-                                               step="0.01" onchange="calculateAmount(this)">
+                                               onchange="calculateAmount(this)">
                                     </td>
                                     <td class="px-2 py-1 text-center whitespace-nowrap">
                                         <input type="text" name="amount" id="amount_table" value="" 
                                                class="w-full px-1 py-0.5 border border-gray-300 bg-gray-50 text-center" readonly>
                                     </td>
                                 </tr>
+                                {% endfor %}
                             </tbody>
                         </table>
                     </div>
                     <div class="p-2 flex-1 flex flex-col">
-                        <div class="my-2 text-gray-600">
-                            ? : / = ชำระแล้ว , x = ชำระบางส่วน
-                        </div>
-                        <div class="mt-2 text-right w-full">
-                            <div class="block my-0.5">
-                                <label for="cb1">มูลค่าสินค้า/บริการN</label>
-                                <input type="text" name="value_n" id="cb1" class="ml-1 w-24 px-1 py-0.5 border border-gray-600 bg-gray-50 focus:outline-none focus:ring-1 focus:ring-blue-500" readonly>
+                        <div class="flex justify-between items-start">
+                            <div class="my-1 text-gray-600">
+                                ? : / = ชำระแล้ว , x = ชำระบางส่วน
                             </div>
+                            <div class="text-right">
+                                <div class="block">
+                                    <label for="cb1">มูลค่าสินค้า/บริการN</label>
+                                    <input type="text" name="value_n" id="cb1" class="ml-1 w-24 px-1 py-0.5 border border-gray-600 bg-gray-50 focus:outline-none focus:ring-1 focus:ring-blue-500" readonly>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="text-right w-full">
                             <div class="block my-0.5">
                                 <label for="cb2">มูลค่าสินค้า/บริการV</label>
                                 <input type="text" name="value_v" id="cb2" class="ml-1 w-24 px-1 py-0.5 border border-gray-600 bg-gray-50 focus:outline-none focus:ring-1 focus:ring-blue-500" readonly>
@@ -293,17 +315,18 @@
                                 <input type="text" name="outstanding_amount" id="cb6" class="ml-1 w-24 px-1 py-0.5 border border-gray-600 bg-gray-50 focus:outline-none focus:ring-1 focus:ring-blue-500" readonly>
                             </div>
                         </div>
+                    
                     </div>
                 </div>
 
                 <!-- Notes Section -->
-                <label class="flex gap-2 mb-1 p-1 items-center min-w-20">หมายเหตุ</label>
-                <div class="flex gap-2 mt-1 items-center">
-                    <input type="text" name="remark_1" class="flex-1 px-1 py-0.5 border border-gray-600 bg-gray-50 focus:outline-none focus:ring-1 focus:ring-blue-500" id="remark_1">
+                <label class="flex gap-2 mb-1 ml-5 p-1 items-center pt-0 text-base">หมายเหตุ</label>
+                <div class="flex gap-2 mt-1 ml-5 items-center">
+                    <input type="text" name="remark_1" class="w-5/6 px-1 py-0.5 border border-gray-600 bg-gray-50 focus:outline-none focus:ring-1 focus:ring-blue-500" id="remark_1">
                 </div>
                 
-                <div class="flex gap-2 mb-1 items-center">
-                    <input type="text" name="remark_2" class="flex-1 px-1 py-0.5 border border-gray-600 bg-gray-50 focus:outline-none focus:ring-1 focus:ring-blue-500" id="remark_2">
+                <div class="flex gap-2 mb-1 ml-5 items-center">
+                    <input type="text" name="remark_2" class="w-5/6 px-1 py-0.5 border border-gray-600 bg-gray-50 focus:outline-none focus:ring-1 focus:ring-blue-500" id="remark_2">
                 </div>
 
         

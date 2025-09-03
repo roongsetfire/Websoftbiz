@@ -640,6 +640,18 @@
             selectedRow.classList.remove('!bg-red-100');
             selectedRow = null;
         }
+        // ✅ เคลียร์ตารางขวา (dataTable1)
+        const rows = document.querySelectorAll("#dataTable1 tr");
+        rows.forEach(tr => {
+            const cols = tr.querySelectorAll("td");
+            for (let i = 1; i < cols.length; i++) {
+                cols[i].textContent = "";
+            }
+            delete tr.dataset.rowKey;  // ลบ rowKey ออกด้วย
+        });
+
+        // ✅ reset selectedRows ด้วย
+        selectedRows = [];
     }
 
     // Select record in table
@@ -758,6 +770,7 @@
                         for (let i = 1; i < cols.length; i++) {
                             cols[i].textContent = "";
                         }
+                        delete tr.dataset.rowKey;
                     }
                 });
 
@@ -1028,7 +1041,7 @@
     document.addEventListener('keydown', function(e) {
         if (e.key === 'F2') {
             e.preventDefault();
-            newRecord();
+            new_Record();
         } else if (e.key === 'F3') {
             e.preventDefault();
             editRecord();
