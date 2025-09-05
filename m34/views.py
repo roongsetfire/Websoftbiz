@@ -12,19 +12,22 @@ import datetime
 def generate_bill_no():
     """สร้างเลขที่ใบแจ้งหนี้อัตโนมัติ"""
     today = datetime.date.today()
-    prefix = today.strftime("%Y%m%d")  # YYYYMMDD
+    prefix = today.strftime("%Y%m%d")[2:4]  # YYYYMMDD
 
     latest = CmtArtr.objects.filter(bill_no__startswith=prefix).aggregate(
         max_no=Max("bill_no")
     )
 
+    print('check',latest["max_no"])
     if latest["max_no"]:
         last_num = int(latest["max_no"][-3:])
-        new_num = last_num + 1
+        a,b = latest["max_no"].split('/')
+        b = int(b)
+        new_num = b + 1
     else:
         new_num = 1
 
-    return f"{prefix}-{new_num:03d}"
+    return f"{prefix}/{new_num}"
 
 
 def m34(request):
@@ -214,7 +217,7 @@ def m34(request):
             )
 
     # ---------------- GET PAGE ----------------
-    cmt_artr = CmtArtr.objects.all().order_by("-id")
+    cmt_artr = CmtArtr.objects.all().order_by("id")
     cmt_artr_item = CmtArtrItem.objects.all()
 
     paginator = Paginator(cmt_artr, 10)

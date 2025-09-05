@@ -1,10 +1,24 @@
 from django.shortcuts import render
 from m35.forms import CmtRctrForm
 from django.http import JsonResponse
+from django.views.decorators.csrf import csrf_exempt
 from .models import CmtRctr
-from m34.models import CmtArtrItem
+from m34.models import CmtArtrItem, CmtArtr
 import json
 from django.core.serializers.json import DjangoJSONEncoder
+
+@csrf_exempt
+def delete_record(request, pk):
+    if request.method == "DELETE":
+        try:
+            record = CmtRctr.objects.get(pk=pk)
+            record.delete()
+            return JsonResponse({"status": "success", "message": "Record deleted successfully."})
+        except CmtRctr.DoesNotExist:
+            return JsonResponse({"status": "error", "message": "Record not found."}, status=404)
+        except Exception as e:
+            return JsonResponse({"status": "error", "message": str(e)}, status=500)
+    return JsonResponse({"status": "error", "message": "Invalid request method."}, status=405)
 
 
 def m35(request):
@@ -75,10 +89,12 @@ def m35(request):
     # ---------- GET ปกติ (render template) ----------
     data = CmtRctr.objects.all().order_by('id')
     data_value = CmtRctr.objects.all().values().order_by('-id')
+    data_artr = CmtArtr.objects.all().values().order_by('-id')
     # data_table = CmtArtrItem.objects.all().values().order_by('id')
     data_table = CmtArtrItem.objects.filter(textstamp='unpaid').values().order_by('id')
     data_table_json = list(data_table)
     data_list = list(data_value)
+    data_artr1 = list(data_artr)
 
     context = {
         'row_numbers': range(1, 10),  # 1 ถึง 10
@@ -87,6 +103,7 @@ def m35(request):
         'type_choices': CmtRctr.TYPE_CHOICES,
         'data': data,
         'data_json': json.dumps(data_list, cls=DjangoJSONEncoder),
+        'data_artr': json.dumps(data_artr1, cls=DjangoJSONEncoder),
         'data_table': data_table,
         'data_table_json': json.dumps(data_table_json, cls=DjangoJSONEncoder)
     }

@@ -141,8 +141,8 @@
 
     <!-- Menu Bar -->
     <div class="gradient-light-gray border-b border-gray-300 px-2 py-1 flex gap-4 shadow-sm">
-        <div class="px-3 py-1 cursor-pointer hover:bg-gray-200 rounded transition-colors duration-200 text-sm menu-item" onclick="exportData()"> <!-- Changed text-xs to text-sm -->
-            V
+        <div class="px-3 py-1 cursor-pointer hover:bg-gray-200 rounded transition-colors duration-200 text-sm menu-item"> <!-- Changed text-xs to text-sm -->
+            <a href="/">V</a>
         </div>
         <div class="dropdown">
             <div class="px-3 py-1 cursor-pointer hover:bg-gray-200 rounded transition-colors duration-200 text-sm menu-item"> <!-- Changed text-xs to text-sm -->
@@ -227,8 +227,8 @@
                     </div>
                 </div>
                 <a href="#" class="dropdown-item" onclick="newRecord('register_owner')">2.ผ่านรายการ ประจำงวด/สร้างใบแจ้งหนี้</a>
-                <a href="#" class="dropdown-item" onclick="newRecord('register_income_type')">3.บันทึก ใบแจ้งค่าใช้จ่าย/พิมพ์ใบแจ้งหนี้</a>
-                <a href="#" class="dropdown-item" onclick="newRecord('register_payment_type')">4.บันทึก การรับชำระเงิน/พิมพ์ใบเสร็จ</a>
+                <a href="/m34" class="dropdown-item" onclick="">3.บันทึก ใบแจ้งค่าใช้จ่าย/พิมพ์ใบแจ้งหนี้</a>
+                <a href="/m35" class="dropdown-item" onclick="">4.บันทึก การรับชำระเงิน/พิมพ์ใบเสร็จ</a>
                 <a href="#" class="dropdown-item" onclick="newRecord('register_vehicle')">5.บันทึก การรับเช็คล่วงหน้า</a>
                 <a href="#" class="dropdown-item" onclick="newRecord('register_phone')">6.บันทึก การรับฝากเงินส่วนตัว</a>
                 <a href="#" class="dropdown-item" onclick="newRecord('register_keycard')">7.ผ่านรายการเช็ค/สร้างใบเสร็จ</a>
@@ -410,7 +410,7 @@
     </div>
 
     <!-- Main Content -->
-    <main class="flex-1 bg-gray-100">
+    <main class="flex-1 bg-yellow-100">
         <!-- Messages -->
         {% if messages %}
             <div class="absolute top-16 right-4 z-50 space-y-2 max-w-sm" id="messages-container">

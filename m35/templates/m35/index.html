@@ -166,7 +166,7 @@
                     <button type="button" class="w-16 gradient-gray border border-gray-600 py-0.5 cursor-pointer hover:bg-gray-300 ml-2 rounded text-blue-600" 
                      onclick="">F6 พิมพ์</button>
                     <button type="button" class="w-16 gradient-gray border border-gray-600 py-0.5 cursor-pointer hover:bg-gray-300 ml-2 rounded text-yellow-500" 
-                     onclick="">ESC ออก</button>
+                     onclick="cancelEdit()">ESC ออก</button>
                 </div>
             </div>
             
@@ -1008,20 +1008,40 @@
 
         showLoading();
         
-        // Simulate delete (replace with actual AJAX call)
-        setTimeout(() => {
-            hideLoading();
-            showMessage('ลบข้อมูลเรียบร้อยแล้ว', 'success');
-            
-            // Remove row from table
-            if (selectedRow) {
-                selectedRow.remove();
-                selectedRow = null;
+        // Send a DELETE request to the server
+        fetch(`/m35/${currentRecordId}`, { // Use the record's ID in the URL
+            method: 'DELETE',
+            headers: {
+                'X-CSRFToken': getCookie('csrftoken') // Include the CSRF token
             }
-            
-            clearForm();
-            setFormMode('view');
-        }, 1000);
+        })
+        .then(response => {
+            hideLoading();
+            if (response.ok) {
+                return response.json();
+            } else {
+                // Handle HTTP errors
+                throw new Error('เกิดข้อผิดพลาดในการลบข้อมูล');
+            }
+        })
+        .then(data => {
+            if (data.status === 'success') {
+                showMessage('ลบข้อมูลเรียบร้อยแล้ว', 'success');
+                // Remove the row from the DOM after successful deletion
+                if (selectedRow) {
+                    selectedRow.remove();
+                    selectedRow = null;
+                }
+                clearForm();
+                setFormMode('view');
+            } else {
+                showMessage(data.message || 'เกิดข้อผิดพลาดในการลบข้อมูล', 'error');
+            }
+        })
+        .catch(error => {
+            hideLoading();
+            showMessage(error.message || 'เกิดข้อผิดพลาดในการติดต่อ server', 'error');
+        });
     }
 
     function cancelEdit() {
@@ -1133,6 +1153,31 @@
             // ✅ คำนวณภาษีใหม่ทุกครั้งที่มีการเลือกบิล
             updateVatSummary();
 
+        }
+    });
+
+    // ✅ ฟังก์ชันค้นหาข้อมูลรหัส-ชื่อจากเลขที่ห้อง
+    document.getElementById("room_no_1").addEventListener("keydown", function(e) {
+        if (e.key === "Enter") {
+            e.preventDefault();
+
+            const roomNo = this.value.trim();
+            if (!roomNo) return;
+
+            const data_form = JSON.parse(`{{ data_artr|safe|escapejs }}`);
+
+            const record = data_form.find(item => item.room_no_1 === roomNo);
+
+            if (record) {
+                document.getElementById("room_no_2").value = record.room_no_2 || "";
+                document.getElementById("member_1").value = record.member_1 || "";
+                document.getElementById("member_2").value = record.member_2 || "";
+            } else {
+                document.getElementById("room_no_2").value = "";
+                document.getElementById("member_1").value = "";
+                document.getElementById("member_2").value = "";
+                alert("ไม่พบข้อมูลห้องนี้");
+            }
         }
     });
 

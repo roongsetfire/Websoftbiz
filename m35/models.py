@@ -22,7 +22,7 @@ class CmtRctr(models.Model):
 
     r_c_no = models.CharField(max_length=50, unique=True, verbose_name="เลขที่ใบเสร็จ")
     date = models.DateField(verbose_name="วันที่")
-    payin = models.DateField(verbose_name="ฝาก")
+    payin = models.DateField(blank=True, null=True,verbose_name="ฝาก")
 
     room_no_1 = models.CharField(
         max_length=20, verbose_name="เลขที่ห้อง 1"
@@ -49,22 +49,22 @@ class CmtRctr(models.Model):
     null=True
     )
 
-    bank_1 = models.CharField(max_length=100, verbose_name="ธนาคาร 1")
+    bank_1 = models.CharField(blank=True, null=True,max_length=100, verbose_name="ธนาคาร 1")
     bank_2 = models.CharField(max_length=100, blank=True, null=True, verbose_name="ธนาคาร 2")
 
-    bank_no = models.CharField(max_length=20, verbose_name="เลขที่")
-    bank_date = models.DateField(verbose_name="วันที่(ธนาคาร)")
+    bank_no = models.CharField(blank=True, null=True,max_length=20, verbose_name="เลขที่")
+    bank_date = models.DateField(blank=True, null=True,verbose_name="วันที่(ธนาคาร)")
 
-    vat = models.BooleanField(default=False, verbose_name="ภาษีหักณที่จ่าย")
+    vat = models.BooleanField(blank=True, null=True,default=False, verbose_name="ภาษีหักณที่จ่าย")
 
-    deduct_from_prepaid = models.BooleanField(default=False, verbose_name="ลดหนี้จากการชำระล่วงหน้า")
-    withdraw_from_bankaccount = models.BooleanField(default=False, verbose_name="ตัดบัญชีเงินฝากส่วนตัว")
+    deduct_from_prepaid = models.BooleanField(blank=True, null=True,default=False, verbose_name="ลดหนี้จากการชำระล่วงหน้า")
+    withdraw_from_bankaccount = models.BooleanField(blank=True, null=True,default=False, verbose_name="ตัดบัญชีเงินฝากส่วนตัว")
     withdraw = models.CharField(max_length=100, blank=True, null=True, verbose_name="ตัดบัญชีเงินฝากส่วนตัว(กรอก)")
 
     total = models.CharField(max_length=100, blank=True, null=True, verbose_name="ยอดชำระสุทธิ")
 
     tax_no = models.CharField(max_length=100, blank=True, null=True, verbose_name="เลขที่หนังสือรับรองการหักภาษี")
-    tax_date = models.DateField(verbose_name="ลงวันที่")
+    tax_date = models.DateField(blank=True, null=True,verbose_name="ลงวันที่")
 
     no_ref = models.CharField(max_length=20, blank=True, null=True, verbose_name="เลขที่อ้างอิง")
    

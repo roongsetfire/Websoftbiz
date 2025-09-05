@@ -391,8 +391,8 @@
             const vatRate = 0.07;
 
             rows.forEach(row => {
-                const itemCode = row.querySelector('#item_code_table')?.value.trim();
-                const amount = parseFloat(row.querySelector('#amount_table')?.value) || 0;
+                const itemCode = row.querySelector('.item_code')?.value.trim();
+                const amount = parseFloat(row.querySelector('.amount')?.value) || 0;
                 if (!itemCode) return;
 
                 const isVatInclusive = itemCode === 'A101';
@@ -411,10 +411,10 @@
 
             document.getElementById('cb1').value = valueN.toFixed(2);
             document.getElementById('cb2').value = valueV.toFixed(2);
-            document.getElementById('cb3').value = vat.toFixed(2);
-            document.getElementById('cb4').value = totalAmount.toFixed(2);
+            document.getElementById('cb3').value = (valueN*vatRate).toFixed(2);
+            document.getElementById('cb4').value = (totalAmount+(valueN*vatRate)).toFixed(2);
             document.getElementById('cb5').value = paidAmount.toFixed(2);
-            document.getElementById('cb6').value = outstandingAmount.toFixed(2);
+            document.getElementById('cb6').value = (totalAmount+(valueN*vatRate)).toFixed(2);
         }
     </script>
 
@@ -544,6 +544,7 @@
                 selectedRow.classList.remove('!bg-red-100');
                 selectedRow = null;
             }
+
         }
 
         // Select record in table
@@ -1052,15 +1053,26 @@
         });
 
         // Initialize
-        document.addEventListener('DOMContentLoaded', function() {
-            setFormMode('view');
+        // document.addEventListener('DOMContentLoaded', function() {
+        //     setFormMode('view');
             
-            // Select first row if exists
-            const firstRow = document.querySelector('#dataTable tr[data-id]');
-            if (firstRow) {
-                const recordId = firstRow.getAttribute('data-id');
-                selectRecord(firstRow, recordId);
-            }
+        //     // Select first row if exists
+        //     const lastRow = document.querySelector('#dataTable tr[data-id]:last-child');
+        //     if (lastRow) {
+        //         const recordId = lastRow.getAttribute('data-id');
+        //         selectRecord(lastRow, recordId);
+        //     }
+        // });
+
+        document.addEventListener('DOMContentLoaded', () => {
+            document.querySelectorAll('.rate, .quantity').forEach(input => {
+                input.addEventListener('keypress', function(e) {
+                    if (e.key === 'Enter') {
+                        e.preventDefault();
+                        calculateAmount(this);
+                    }
+                });
+            });
         });
     </script>
 {% endblock %}
